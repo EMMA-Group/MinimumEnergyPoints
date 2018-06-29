@@ -1,0 +1,11 @@
+filename scheme:
+D = dimension
+N = number of points
+s = symmetry flag (either 0 or 1)
+e = energy index: 0 is the logarithmic energy, >0 is s of the s-Riesz energy
+EQ = equal area points
+
+
+examples:
+D3_N512_s0_e0.mat
+D3_N512_EQ.mat
