@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % COPYRIGHT NOTES
-%
+% 
 % Start_ME_Points.m
 % Copyright (C) 2018 by Felix Fritzen and Oliver Kunc
 %
