@@ -91,6 +91,10 @@ if exist('capcenter','var')
     if size(capcenter,1)~=3
         error('size(capcenter,1) must be 3');
     end
+    capcenter = RenormalizeColumns(capcenter);
+else
+    capcenter = [0;0;1];
+    disp('set cap center to default (north pole)')
 end
 if exist('capradius','var')
     if length(capradius) ~= 1
@@ -102,6 +106,7 @@ if exist('capradius','var')
     end
 else
     capradius = pi/4;
+    disp('set cap radius to default (pi/4)')
 end
 
 
@@ -192,51 +197,16 @@ idx = real( acos( min(1,max(-1,X'*capcenter)) ) ) < capradius;
 X_on_cap = X(:,idx);
 X_no_cap = X(:,~idx);
 
-% plot X
-xhandle = plot3(X_on_cap(1,:),X_on_cap(2,:),X_on_cap(3,:), ...
+% plot X ...
+% ... on cap
+plot3(X_on_cap(1,:),X_on_cap(2,:),X_on_cap(3,:), ...
     '.','markersize',point_size,'Color',color_X_on_cap);
 hold on
+% ... no cap
 plot3(X_no_cap(1,:),X_no_cap(2,:),X_no_cap(3,:), ...
     '.','markersize',point_size,'Color',color_X_no_cap);
-
-% % if sym, then plot -X, and optionally -Y
-% if sym==1
-%     xhandle_sym = plot3(-X(1,:),-X(2,:),-X(3,:), ...
-%         'o','markersize',point_size,'Color',color_X_on_cap);
-% end
-
-
-
-
-
-
-% some view options
-axis equal vis3d
-xlabel('x')
-ylabel('y')
-zlabel('z')
-rotate3d
-if sym==0
-    if exist('yhandle','var')
-        legend([xhandle yhandle], 'X', 'Y');
-    else
-        legend(xhandle,'X');
-    end
-else
-    if exist('yhandle','var')
-        legend([xhandle yhandle xhandle_sym yhandle_sym], 'X', 'Y', '-X', '-Y');
-    else
-        legend([xhandle xhandle_sym], 'X', '-X');
-    end
-end
 hold off
+axis equal
+rotate3d
 
 
-
-
-
-
-%% example code: plot halves of two equal area point sets and symmetrize
-%X=eq_point_set(2,10);
-%Y=eq_point_set(2,12);
-%PlotPointsOnSphere(X(:,1:end/2),Y(:,1:end/2), 1)
