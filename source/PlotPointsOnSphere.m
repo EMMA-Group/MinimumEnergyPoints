@@ -186,7 +186,7 @@ if sym==0
     end
 else
     if exist('yhandle','var')
-        legend([xhandle yhandle xhandle_sym yhandle_sym], Xname, Yname, ['-' Xname], ['-' Yname]);
+        legend([xhandle yhandle xhandle_sym yhandle], Xname, Yname, ['-' Xname], ['-' Yname]);
         legend([xhandle xhandle_sym yhandle ], Xname, ['-' Xname], Yname);
     else
         legend([xhandle xhandle_sym], Xname, ['-' Xname]);
