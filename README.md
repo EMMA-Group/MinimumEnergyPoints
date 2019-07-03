@@ -4,7 +4,7 @@ Distribute points on hyperspheres such that user-defined energy is minimized. MA
 This software package is related to the research article
 
 Oliver Kunc and Felix Fritzen: ''
-JOURNAL NAME, Number/Volume, p. XX-YY, 2018
+JOURNAL NAME, Number/Volume, p. XX-YY, 2019
 DOI   ...
 URL   dx.doi.org/...
 

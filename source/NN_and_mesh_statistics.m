@@ -17,7 +17,7 @@ function [NN_xi_MinMeanMax, meshnorm, meshratio, largestgap] = NN_and_mesh_stati
 % COPYRIGHT NOTES
 %
 % NN_and_mesh_statistics.m
-% Copyright (C) 2018 by Felix Fritzen and Oliver Kunc
+% Copyright (C) 2019 by Felix Fritzen and Oliver Kunc
 %
 % This program is free software: you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -63,7 +63,7 @@ function [NN_xi_MinMeanMax, meshnorm, meshratio, largestgap] = NN_and_mesh_stati
 % This software package is related to the research article
 %
 % Oliver Kunc and Felix Fritzen: ''
-% JOURNAL NAME, Number/Volume, p. XX-YY, 2018
+% JOURNAL NAME, Number/Volume, p. XX-YY, 2019
 % DOI   ...
 % URL   dx.doi.org/...
 %
