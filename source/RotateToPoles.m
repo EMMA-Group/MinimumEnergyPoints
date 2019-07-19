@@ -86,7 +86,7 @@ Y = P*X;
 xmin = inf;
 F=[];
 for phi=0:pi/200:pi/2
-    [~,nn] = GeodesicDistance( [[ cos(phi), sin(phi), 0; -sin(phi), cos(phi), 0; 0,0,1] * Y, X_eq]);
+    [~,nn] = Distance( [[ cos(phi), sin(phi), 0; -sin(phi), cos(phi), 0; 0,0,1] * Y, X_eq]);
     f=norm(nn);
     F=[F;f];
     if( f < xmin )
@@ -95,7 +95,7 @@ for phi=0:pi/200:pi/2
     end
 end
 Y= [ cos(phimin), sin(phimin), 0; -sin(phimin), cos(phimin), 0; 0,0,1] * Y;
-[~,nn] = GeodesicDistance( [Y, X_eq]);
+[~,nn] = Distance( [Y, X_eq]);
 f=norm(nn);
 % F
 % max(F)

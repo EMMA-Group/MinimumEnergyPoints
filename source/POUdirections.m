@@ -12,7 +12,7 @@ function [POU_err diff_one] = POUdirections(X_training, X_vali, gamma)
 % POU_err       RMSE of POU for all Nvali validation directions
 % diff_one      pointwise difference of sum of weights and one
 %
-% See also EQ_POINT_SET, REPULSIONENERGY, GEODESICDISTANCE,
+% See also EQ_POINT_SET, ENERGY, DISTANCE,
 % RENORMALIZECOLUMNS
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -72,7 +72,7 @@ function [POU_err diff_one] = POUdirections(X_training, X_vali, gamma)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% compute the distance matrices
-Xi_training = GeodesicDistance(X_training);
+Xi_training = Distance(X_training);
 Xi_training_vali = real(acos(min(1,max(-1,X_training'*X_vali))));
 
 %% call the main POU function

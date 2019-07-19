@@ -186,7 +186,13 @@ function pushbutton_generate_directions_Callback(hObject, eventdata, handles)
     handles.parameters.D = CheckInteger(str2double(get(handles.edit_D,'string')),2);
     handles.parameters.N = CheckInteger(str2double(get(handles.edit_N,'string')),2);
     handles.parameters.sym_flag = get(handles.checkbox_sym,'value');
-    handles.parameters.energy_index = get(handles.popupmenu_energy,'value') - 1;
+        raw_val = get(handles.popupmenu_energy,'value');
+        if raw_val==3
+            idx = 0.5;
+        else
+            idx = raw_val-3;
+        end
+    handles.parameters.energy_index = idx;
     handles.parameters.n_cycle_energy = CheckInteger(str2double(get(handles.edit_energy_cycles,'string')),0);
     handles.parameters.n_it_energy = CheckInteger(str2double(get(handles.edit_energy_iterations,'string')),0);
     handles.parameters.n_cycle_gradient = CheckInteger(str2double(get(handles.edit_gradient_cycles,'string')),0);
@@ -235,33 +241,33 @@ function pushbutton_generate_directions_Callback(hObject, eventdata, handles)
     handles.parameters.creation_date = datestr(now);
     
     % TODO introduce fixpoint functionality
-    disp('Use fminunc to minimize total energy...')
+    disp('Use fminunc to minimize energy I ...')
     tic
-    X = GenerateDirections( D, N, n_it_energy,  n_cycle_energy, Xstart, energy_index, sym_flag );
+    X = MinimizeEnergy( D, N, n_it_energy,  n_cycle_energy, Xstart, energy_index, sym_flag );
     toc
 
-    disp('Minimize gradient by directly simulating repulsion...')
+    disp('Use lsqnonlin to minimize gradient g ...')
     tic
-    X = GenerateDirectionsForce( D, N, n_it_gradient, n_cycle_gradient, X, energy_index, sym_flag );
+    X = MinimizeGradient( D, N, n_it_gradient, n_cycle_gradient, X, energy_index, sym_flag );
     toc
     
 %     % Plot empirical distribution functions
 %     disp('Plotting empirical distribution functions')
 %     tic
 %     cla(handles.axes1)
-%     PlotECDF(X, sym_flag, handles.axes1);
+%     PlotEDF(X, sym_flag, handles.axes1);
 %     toc
     
     % Nearest neighbor (NN) and mesh statistics
     [NN_xi_MinMeanMax, meshnorm, meshratio, largestgap] = NN_and_mesh_statistics(X,sym_flag);
     
     % Display mesh and NN statistics
-    set(handles.text_meshstat_norm,'string',num2str(meshnorm));
-    set(handles.text_meshstat_separation,'string',num2str(0.5*NN_xi_MinMeanMax(1)));
-    set(handles.text_meshstat_ratio,'string',num2str(meshratio));
-    set(handles.text_NN_min,'string',num2str(NN_xi_MinMeanMax(1)));
-    set(handles.text_NN_mean,'string',num2str(NN_xi_MinMeanMax(2)));
-    set(handles.text_NN_max,'string',num2str(NN_xi_MinMeanMax(3)));
+    set(handles.text_meshstat_norm,'string',        sprintf('%7.5f',meshnorm));
+    set(handles.text_meshstat_separation,'string',  sprintf('%7.5f',0.5*NN_xi_MinMeanMax(1)));
+    set(handles.text_meshstat_ratio,'string',       sprintf('%7.5f',meshratio));
+    set(handles.text_NN_min,'string',               sprintf('%7.5f',NN_xi_MinMeanMax(1)));
+    set(handles.text_NN_mean,'string',              sprintf('%7.5f',NN_xi_MinMeanMax(2)));
+    set(handles.text_NN_max,'string',               sprintf('%7.5f',NN_xi_MinMeanMax(3)));
 
     % Store results in handles structure
     handles.results.X = X;
@@ -997,5 +1003,25 @@ end
 disp('Plotting empirical distribution functions')
 tic
 cla(handles.axes1)
-PlotECDF(handles.results.X, handles.parameters.sym_flag, handles.axes1);
+PlotEDF(handles.results.X, handles.parameters.sym_flag, handles.axes1);
 toc
+
+
+function axes1_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to axes1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: place code in OpeningFcn to populate axes1
+handles.axes1 = hObject;
+guidata(gcbf, handles);
+axes1_OpeningFcn(hObject, eventdata, hObject)
+
+function axes1_OpeningFcn(hObject, eventdata, ax, varargin)
+% This function has no output args, see OutputFcn.
+% hObject    handle to figure
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% varargin   unrecognized PropertyName/PropertyValue pairs from the
+%            command line (see VARARGIN)
+PlotEDF([],0,ax)

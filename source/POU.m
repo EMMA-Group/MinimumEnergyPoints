@@ -1,13 +1,13 @@
-function [POU_RMSE, POU_diff] = POU(Xi_training, Xi_training_vali, gamma)
+function [POU_L2error, POU_diff] = POU(Xi_training, Xi_training_vali, gamma)
 % POU  compute the error of partition of unity (POU) from provided geodesic
 % distances and gamma.
 % The measure of error can be adjusted within this function.
 % 
 % Inputs
-% Xi_training       matrix of distances between training directions, size
-%                   N-by-N
-% Xi_training_vali  matrix of distances between training directions and
-%                   validation directions, size N-by-Nvali
+% Xi_training       matrix of geodesic distances between training
+%                   directions, size N-by-N
+% Xi_training_vali  matrix of geodesic distances between training
+%                   directions and validation directions, size N-by-Nvali
 % gamma             kernel width parameter
 %
 % Outputs
@@ -75,10 +75,14 @@ function [POU_RMSE, POU_diff] = POU(Xi_training, Xi_training_vali, gamma)
 %% compute the kernel matrix K
 % size of K is N-by-N
 K = exp( - gamma * Xi_training.^2 );
+% fprintf(2,'WARNING: symmetry is hard-wired!\n')
+% K = K + exp( - gamma * (pi-Xi_training).^2 );
 
 %% compute the kernel function zeta for all validation directions
 % size of k is N-by-Nvali
 zeta = exp( -gamma * Xi_training_vali .^ 2 );
+% fprintf(2,'WARNING: symmetry is hard-wired!\n')
+% zeta = zeta + exp( -gamma * (pi-Xi_training_vali) .^ 2 );
      
 %% determine weights w
 % size of w is N-by-Nvali
@@ -96,7 +100,7 @@ W = sum(w,1);
 % rooted mean square error w.r.t. 1-function
 Nvali = size(Xi_training_vali,2);
 POU_diff = W -  ones(1,Nvali);
-POU_RMSE = norm( POU_diff ) / sqrt(Nvali);
+POU_L2error = norm( POU_diff ) / sqrt(Nvali); % norm() defaults to the 2-norm
 
 %% some handy plotting routine. opens new figure window at every call!
 % figure('Name', ['POU: diff. to one, gamma = ', num2str(gamma)], 'NumberTitle', 'off'); 

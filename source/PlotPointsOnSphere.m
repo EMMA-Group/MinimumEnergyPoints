@@ -90,7 +90,7 @@ if exist('Y','var')
         error('if Y is provided, size(Y,1) must be 3, or Y=[]');
     end
     if size(Y,1)==3
-        figname = [num2str(size(X,2)) ' vs ' num2str(size(Y,2)) ' points'];
+        figname = [num2str(size(X,2)) ' points (X) and largest gap (Y)'];
     elseif isempty(Y)
         figname = [num2str(size(X,2)) ' points'];
     end

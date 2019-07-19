@@ -8,7 +8,7 @@ function [meshnorm, largestgap] = MeshNorm(X, Y, sym_flag)
 % X            matrix D-by-Nx, normalized columns
 % Y            matrix D-by-Ny, normalized columns. Ny >> Nx
 % sym_flag     symmetry flag, indicating whether or not to use symmetric
-%              distance function (i.e. angular distance modulo pi)
+%              distance function
 %
 % OUTPUTS
 % meshnorm     an approximation to the mesh norm
@@ -75,8 +75,8 @@ if size(X,1) ~= size(Y,1)
     error('size(X,1) must be the same as size(Y,1)');
 end
 
-if size(Y,2) < size(X,2)
-    warning('size(X,2) should be (significantly) small than size(Y,2) !!!');
+if size(Y,2) <= size(X,2)
+    warning('size(X,2) should be (significantly) smaller than size(Y,2)!');
 end
 
 
@@ -87,22 +87,27 @@ elseif sym_flag ~= 0 && sym_flag ~= 1
     error('sym_flag must be either 0 or 1')
 end
 
-% then, get the distance matrix. first index: X, second index: Y
+N       = size(X,2);
+[XX]    = RenormalizeColumns(X);
+[YY]    = RenormalizeColumns(Y);
+M0      = XX'*YY;
+% make sure that no values exceeding +/- 1 exist
+M0      = max( min(  M0(:,:) , 1.0 ), -1.0 );
+% compute d. first index: X, second index: Y
 if sym_flag == 0
-    D = real(acos(min(1,max(-1,X'*Y))));
+    d = sqrt(2*(1-M0));
 else
-    D = real(acos(abs(min(1,max(-1,X'*Y)))));
+    d = min(sqrt(2*(1-M0)),sqrt(2*(1+M0)));
 end
 
-
-% recall mesh norm definition: sup_y min_x D
+% mesh norm definition: sup_Y min_X d
 % now the task is: find the column for which the smallest entry is largest,
 % and take that entry as meshnorm, and the corresponding column of Y as
 % largest gap coordinates
-minD = min(D,[],1);   % row vector with nearest neighbor distances for all test points in Y
-[meshnorm, largestgap_index] = max(minD); % maximum nearest neighbor distance, and the corresponding point index of Y
+min_d = min(d,[],1);   % row vector with nearest neighbor distances for all test points in Y
+[meshnorm, largestgap_index] = max(min_d); % maximum nearest neighbor distance, and the corresponding point index of Y
 if nargout > 1
-    largestgap = Y(:,largestgap_index);
+    largestgap = YY(:,largestgap_index);
 end
 
 end

@@ -12,7 +12,7 @@ function [ Y, l ] = RenormalizeColumns( X )
 % l           vector containing the length of each column of X
 %
 % This code is used by other subprograms provided in this package,
-% see also GEODESICDISTANCE, REPULSIONENERGY, SEARCHGAMMAPOU
+% see also DISTANCE, ENERGY, SEARCHGAMMAPOU
 %
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

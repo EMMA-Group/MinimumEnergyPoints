@@ -65,8 +65,8 @@ end
 
 R = RandomDirections(d, M);
 
-Theta = R'*X;
-Xi    = acos( min( max( Theta, -1 ), 1 ) );
+Dist = R'*X;
+Xi    = acos( min( max( Dist, -1 ), 1 ) );
 
 figure;
 subplot(1,2,1);

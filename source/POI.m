@@ -5,10 +5,10 @@ function [POI_RMSE, POI_normdiff] = POI(Xi_training, Xi_training_vali, ...
 % The measure of error can be adjusted within this function.
 % 
 % Inputs
-% Xi_training       matrix of distances between training directions, size
-%                   N-by-N
-% Xi_training_vali  matrix of distances between training directions and
-%                   validation directions, size N-by-Nvali
+% Xi_training       matrix of geodesic distances between training
+%                   directions, size N-by-N
+% Xi_training_vali  matrix of geodesic distances between training
+%                   directions and validation directions, size N-by-Nvali
 % gamma             kernel width parameter
 % X_training        training directions, size D-by-N (D = dimension)
 % X_vali            validation directions, size D-by-Nvali

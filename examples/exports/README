@@ -1,11 +1,13 @@
 filename scheme:
-D = dimension
-N = number of points
-s = symmetry flag (either 0 or 1)
-e = energy index: 0 is the logarithmic energy, >0 is s of the s-Riesz energy
-EQ = equal area points
+D   = dimension of Euclidean space, i.e. for points on the d-sphere: D=d+1
+N   = number of points
+sym = symmetry flag: 1 means symmetrized kernel was used, 0 means usual kernel was used
+s   = case index: -2 means LOG, -1 means log, >0 means Riesz
 
+storage format:
+.txt: tab and space separated numbers, N-by-D entries
+.mat: contains a matrix "X", D-by-N entries, and a struct with the initial parameters
 
-examples:
-D3_N512_s0_e0.mat
-D3_N512_EQ.mat
+example:
+D6_N512_sym0_s-2.txt
+D6_N512_sym0_s-2.mat

@@ -1,5 +1,6 @@
-function [ gamma_best, RMSE, V ] = SearchGamma( X, vali, ...
-    gamma_min, gamma_max, ngamma, partition_case, xitrunc, do_plot )
+function [ gamma_best, POU_L2error_best, V, gammaspace, POU_L2error_all ]...
+    = SearchGamma( X, vali, gamma_min, gamma_max, ngamma, ...
+      partition_case, xitrunc, do_plot )
 % SearchGamma  Find best gamma in a provided range w.r.t. to the rooted 
 % mean square error of the partition of unity (POU). Uses Gaussian kernel.
 % 
@@ -7,7 +8,7 @@ function [ gamma_best, RMSE, V ] = SearchGamma( X, vali, ...
 % X           D x N matrix containing normalized columns; each column is
 %             one sampling/training direction
 % vali        encodes the directions on which the POU will be evaluated
-%              if integer -> equal area partition with random perturbation
+%              if integer -> equal area partition
 %              if matrix of size(vali,1)=D -> use the columns as directions
 %              if string, load directions from textfile via dlmread
 % gamma_min   minimum gamma to be considered
@@ -29,7 +30,7 @@ function [ gamma_best, RMSE, V ] = SearchGamma( X, vali, ...
 %                   directions)
 % V                 the validation directions ( D x Nvali )
 %
-% See also POU, POI, GEODESICDISTANCE
+% See also POU, POI, DISTANCE
 %
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -109,10 +110,10 @@ if ischar(vali)
     Nvali = size(Y,2);
     disp([' using ' num2str(Nvali) ' validaton directions from file ' vali])
 elseif length(vali)==1
-    disp([' using ' num2str(vali) ' random validation directions'])
+    disp([' using ' num2str(vali) ' EQ directions'])
     Nvali = vali;
-%     V = RenormalizeColumns( eq_point_set(D-1,Nvali) + 0.01* RenormalizeColumns(randn( D, Nvali )) );
-    V = RandomDirections(D,Nvali);
+    V = RenormalizeColumns( eq_point_set(D-1,Nvali) );%+ 0.01* RenormalizeColumns(randn( D, Nvali )) );
+%     V = RandomDirections(D,Nvali);
 elseif size(vali,1)==D
     V = vali;
     Nvali = size(V,2);
@@ -123,12 +124,12 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% geodesic distance between the validation data and input data
 % size(xi_input_vali) = [N   Nvali]
-
 xi_input_vali = real( acos( min( 1, max( -1, X'*V) ) ) );
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% compute distance matrix for the provided point set
-[xi_input, NN_input] = GeodesicDistance( X );
+
+[xi_input, NN_input] = DistanceGeodesic( X );
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% output some information on the input data, and do input checks
@@ -155,12 +156,15 @@ fprintf('# gamma_min ................................ %8.5f\n', gamma_max );
 fprintf('# n_gamma .................................. %8i\n', ngamma );
 fprintf('###################################################################\n');
 fprintf('#  gamma        RMSE\n');
-RMSE_best = -1;
+POU_L2error_best = -1;
 gamma_best = gamma_max;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% truncation
 if exist('xitrunc','var') && ~isempty(xitrunc)
+    if ~isnumeric(xitrunc)
+        error('if xitrunc is provided, it mus be numeric')
+    end
     ximax = xitrunc;
     ndel = 0;
     for n=1:N
@@ -189,42 +193,42 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% loop for finding gamma
-RMSE_all=zeros(ngamma,1);
+POU_L2error_all=zeros(ngamma,1);
 i_gamma=1;
 gamma_with_warning = [];
 lastwarn('');            % empty lastwarn s.t. new warnings can be detected
-gammaspace = linspace( gamma_min, gamma_max, ngamma );
-for gamma = gammaspace
+gammaspace = linspace( gamma_min, gamma_max, ngamma )';
+for gamma = gammaspace'
 % compute RMSE. case consistency of partition_case has been checked above
     if strcmp(partition_case,'U')
-        RMSE = POU(xi_input, xi_input_vali, gamma);
+        POU_L2error = POU(xi_input, xi_input_vali, gamma);
     else
-        RMSE = POI(xi_input, xi_input_vali, gamma, X, V);
+        POU_L2error = POI(xi_input, xi_input_vali, gamma, X, V);
     end
     if ~strcmp(lastwarn,'')
         gamma_with_warning(end+1) = gamma;  % track gammas which issued warnings
         lastwarn('');
     end
-    RMSE_all(i_gamma)  = RMSE;
-    if ( RMSE < RMSE_best || RMSE_best < 0 )   % RMSE_best was initialized  as -1
+    POU_L2error_all(i_gamma)  = POU_L2error;
+    if ( POU_L2error < POU_L2error_best || POU_L2error_best < 0 )   % RMSE_best was initialized  as -1
         gamma_best  = gamma;
-        RMSE_best    = RMSE;
+        POU_L2error_best    = POU_L2error;
     end
-    fprintf('%10.5f    %16.8e\n', gamma, RMSE );
+    fprintf('%10.5f    %16.8e\n', gamma, POU_L2error );
     i_gamma=i_gamma+1;
-end;
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% outputs
-fprintf('best fit: %10.6f, err: %10.5e\n', gamma_best, RMSE_best );
+fprintf('best fit: %10.6f, err: %10.5e\n', gamma_best, POU_L2error_best );
 % figure;
 % title('rel. LSQ POU/POI error\n');
 
 if exist('do_plot','var') && do_plot==true
-    semilogy( linspace(gamma_min,gamma_max,ngamma), RMSE_all, 'linewidth', 3 )
+    semilogy( linspace(gamma_min,gamma_max,ngamma), POU_L2error_all, 'linewidth', 3 )
     hold on
     % plot gammas with warnings
-    plot(gamma_with_warning,ones(size(gamma_with_warning))*min(RMSE_all)/5,'r.')
+    plot(gamma_with_warning,ones(size(gamma_with_warning))*min(POU_L2error_all)/5,'r.')
     grid minor
     xlabel('gamma')
     ylabel('RMSE')
@@ -238,7 +242,7 @@ end
 % gamma_with_warning
 % format short
 
-% write gamma vs error plot to gnuplottable txt file:
-% dlmwrite('some_file_name.txt', [gammaspace' RMSE_all], 'delimiter', '\t', ...
-%     'precision', '%28.20e');
+% % write gamma vs error plot to gnuplottable txt file:
+% dlmwrite('gammas/some_file_name.txt', [gammaspace POU_L2error_all],...
+%     'delimiter', '\t', 'precision', '%28.20e');
 

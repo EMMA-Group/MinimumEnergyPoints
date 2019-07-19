@@ -70,6 +70,9 @@ function [ X ] = RandomDirections( D, N )
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 rng('shuffle')
+if length(D)~=1 || length(N)~=1
+    error(['size(D) = ',num2str(size(D)),', size(N) = ',num2str(size(N))])
+end
 X   = RenormalizeColumns(randn( D, N ));
 
 
