@@ -88,22 +88,6 @@ n_it_gradient  =   1; % number of unconstrained gradient iterations (per gradien
 n_fixpoints = 0; % fixpoints not yet implemented
 creation_date = datestr(now);
 
-% store parameters in structure
-parameters = struct;
-parameters.D = D;
-parameters.N = N;
-parameters.sym_flag = sym_flag;
-parameters.energy_index = s;
-parameters.n_cycle_energy = n_cycle_energy;
-parameters.n_it_energy = n_it_energy;
-parameters.n_cycle_gradient = n_cycle_gradient;
-parameters.n_it_gradient = n_it_gradient;
-parameters.Xstart_origin = Xstart_origin;
-parameters.Xstart_name = Xstart_name;
-parameters.Xstart = Xstart;
-parameters.n_fixpoints = n_fixpoints;
-parameters.creation_date = creation_date;
-
 %% loop
 for D = all_D
     for N = all_N
@@ -119,6 +103,22 @@ for D = all_D
             N
             sym_flag
             s
+            
+            % store parameters in structure
+            parameters = struct;
+            parameters.D = D;
+            parameters.N = N;
+            parameters.sym_flag = sym_flag;
+            parameters.energy_index = s;
+            parameters.n_cycle_energy = n_cycle_energy;
+            parameters.n_it_energy = n_it_energy;
+            parameters.n_cycle_gradient = n_cycle_gradient;
+            parameters.n_it_gradient = n_it_gradient;
+            parameters.Xstart_origin = Xstart_origin;
+            parameters.Xstart_name = Xstart_name;
+            parameters.Xstart = Xstart;
+            parameters.n_fixpoints = n_fixpoints;
+            parameters.creation_date = creation_date;
             
             %% start the energy minimization by fminunc
             disp('Use fminunc to minimize energy...')
