@@ -11,3 +11,5 @@ URL   dx.doi.org/...
 Start the GUI by running Start_ME_Points.m
 A command line script template is in examples/
 See the paper for more information or contact the authors.
+
+TODO: update comments, especially description of function arguments
