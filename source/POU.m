@@ -5,13 +5,13 @@ function [POU_L2error, POU_diff] = POU(Xi_training, Xi_training_vali, gamma)
 % 
 % Inputs
 % Xi_training       matrix of geodesic distances between training
-%                   directions, size N-by-N
+%                   points, size N-by-N
 % Xi_training_vali  matrix of geodesic distances between training
-%                   directions and validation directions, size N-by-Nvali
+%                   points and validation points, size N-by-Nvali
 % gamma             kernel width parameter
 %
 % Outputs
-% POU_RMSE          RMSE of POU for all Nvali validation directions
+% POU_RMSE          RMSE of POU for all Nvali validation points
 % POU_diff          pointwise difference of sum of weights and one
 %
 % See also SEARCHGAMMA, POI
@@ -78,7 +78,7 @@ K = exp( - gamma * Xi_training.^2 );
 % fprintf(2,'WARNING: symmetry is hard-wired!\n')
 % K = K + exp( - gamma * (pi-Xi_training).^2 );
 
-%% compute the kernel function zeta for all validation directions
+%% compute the kernel function zeta for all validation points
 % size of k is N-by-Nvali
 zeta = exp( -gamma * Xi_training_vali .^ 2 );
 % fprintf(2,'WARNING: symmetry is hard-wired!\n')
@@ -105,7 +105,7 @@ POU_L2error = norm( POU_diff ) / sqrt(Nvali); % norm() defaults to the 2-norm
 %% some handy plotting routine. opens new figure window at every call!
 % figure('Name', ['POU: diff. to one, gamma = ', num2str(gamma)], 'NumberTitle', 'off'); 
 % plot(sort(POU_diff,'ascend'));
-% xlabel('case of evaluation direction')
+% xlabel('case of evaluation point')
 % ylabel('difference of interpolation to one')
 % grid on
 

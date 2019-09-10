@@ -1,25 +1,25 @@
-function [ xi, nn_xi, Y, l ] = DistanceGeodesic( X, sym_flag )
-%% DISTANCEGEODESIC  Compute the geodesic distances of the directions
-% defined by the columns of X (with or without consideration of point
-% symmetry)
+function [ xi, xi_nn, Y, l ] = DistanceGeodesic( X, sym_flag )
+%% DISTANCEGEODESIC  Compute the geodesic distances of the spherical points
+% defined by the columns of X (with or without consideration of symmetry
+% w.r.t. the origin). Operates on normalized point coordinate vectors.
 % 
 % Inputs
-% X           D x N matrix containing nonzero column vectors;
-%             each column will be interpreted in terms of
-%             one sampling direction
-% sym_flag    [OPTIONAL]  1    --> use symmetrized distance function
-%             [ i.e. Theta_ij = acos( abs (X_i . X_j)/(l_i * l_j) ) ]
-%             otherwise: Theta_ij = acos( (X_i . X_j)/(l_i * l_j) ) ]
+% X           D x N matrix containing the point coordinates as columns
+% sym_flag    [OPTIONAL] if 1, then xi_nn is of size 2*N x 2*N. The upper
+%             left and lower right N x N blocks each contain the distances
+%             of the explicitly provided points X, the off-diagonal blocks
+%             contain the distances of X to their antipodes -X.
 %
 % Outputs
-% xi          geodesic (i.e. angular) distance matrix xi_ij [rad]
-% nn_xi       nearest neighbor distance of every point / within every
-%             column of xi ( nn_xi = min( xi + pi*eye(N) ) ), size 1 x N
+% xi          geodesic distance matrix. Size N x N if sym_flag==0 or not
+%             provided, size 2*N x 2*N if sym_flag==1.
+% xi_nn       nearest neighbor (=nn) distance of every point / within every
+%             column of d. Size 1 x N if sym_flag==0 or not provided, size
+%             1 x 2*N if sym_flag==1.
 % Y           copy of X with normalized columns
 % l           vector containing the length of each column of X
 %
-% See also RENORMALIZECOLUMNS, SEARCHGAMMAPOU
-%
+% See also RENORMALIZECOLUMNS, DISTANCE
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % COPYRIGHT NOTES
@@ -88,7 +88,9 @@ else
 end
 
 N       = size(X,2);
+% normalize
 [Y, l]  = RenormalizeColumns(X);
+% pairwise scalar products
 M0      = Y'*Y;
 % make sure M0 is symmetric
 M0      = 0.5*(M0+M0');
@@ -96,12 +98,12 @@ M0      = 0.5*(M0+M0');
 M0      = max( min(  M0(:,:) , 1.0 ), -1.0 );
 % put ones on the diagonal
 M0      = M0 - diag(diag(M0)) + eye(N);
-% prevent spurious complex numbers from popping up
+% prevent spurious complex numbers
 xi   = real( acos(M0) );
 
-% if symmetrized points are provided, then the output nn_xi has
-% two times as many entries as number of points requested and
-% xi is of dimension (2*N)-by-(2*N)
+% if sym_flag==1, compute also the distances to the antipodes of X. Return
+% the distance matrix d of the point coordinate matrix [X,-X]. Then d is of
+% size 2*N x 2*N.
 if( sym_flag == 1 )
 	xi = [ xi, pi-xi; pi-xi, xi ];
 end
@@ -109,8 +111,8 @@ end
 if nargout>=2
     % NOTE: the diagonal must not be taken here as it contains a zero distance...
     if( sym_flag == 1 )
-        nn_xi = min( xi + pi*eye(2*N) );
+        xi_nn = min( xi + pi*eye(2*N) );
     else
-        nn_xi = min( xi + pi*eye(N) );
+        xi_nn = min( xi + pi*eye(N) );
     end
 end

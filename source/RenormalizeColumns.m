@@ -5,14 +5,14 @@ function [ Y, l ] = RenormalizeColumns( X )
 % Inputs
 % X           D x N matrix containing nonzero column vectors;
 %             each column will be interpreted in terms of
-%             one sampling direction
+%             one sampling point
 %
 % Outputs
 % Y           copy of X with normalized columns
 % l           vector containing the length of each column of X
 %
 % This code is used by other subprograms provided in this package,
-% see also DISTANCE, ENERGY, SEARCHGAMMAPOU
+% see also DISTANCE, ENERGY
 %
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

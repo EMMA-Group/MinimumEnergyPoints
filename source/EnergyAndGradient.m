@@ -1,22 +1,42 @@
 function [ I, g ] = EnergyAndGradient( Xvec, D, energy_index, sym_flag )
-%% ENERGYANDGRADIENT computes for a global vector of inputs X of size D * N
-% (e.g. obtained via reshape of an D x N matrix) the overall energy I of
-% the point set and [optional] the tangential part of the gradient g of I.
+%% ENERGYANDGRADIENT computes the s-energy I of a spherical point set.
+% Optionally, the tangential part g of the gradient of I is computed, just
+% as in the function Gradient. Also optionally, symmetrized kernels are
+% employed (if sym_flag==1).
+%
+% "s" from the paper is energy_index here. The input vector Xvec contains
+% the columns of the coordinate matrix X stacked on top of each other (e.g.
+% via reshape). 
+%
+% For the Riesz cases and the log case, the normalization factor is
+% N*(N-1). For the LOG case, the normalization factor N^2 is used (see
+% paper Section 2.2).
+%
 % NOTE: This function is eligible for use with fminunc etc. via
-% fminunc( @(X) EnergyAndGradient( X, D ), ... );
-% where D is defined before.
+% fminunc( @(x) EnergyAndGradient( x, D ), ... );
+% This is the reason why it operates on Xvec and not on X.
+%
+% The gradient part of this function is identical to that of the function
+% Gradient. Only reason for the inclusion of that code copy here is that,
+% if known in advance, the Distance function needs to be called only once.
 %
 % Inputs
-% Xvec       matrix in vector shape of size D*N x 1
-% D          dimension of the local data
-% sym_flag   [OPTIONAL] 1 if symmetric, 0 if not
+% Xvec          column vectors of point coordinates stacked on top of each
+%               other, size D*N x 1
+% D             dimension of the Euclidean space in which the points are
+%               defined
+% energy_index  index of the energy function to be used ("s" in the paper)
+% sym_flag      [OPTIONAL] if this is 1, then symmetrized kernel functions
+%               are employed. if this is 0 or omitted, then the kernel
+%               functions are not modified.
 %
 % Outputs
-% I          global energy of the point set (scalar)
-% g          [OPTIONAL] gradient of I (same dimension as X) projected onto
-%            the plane, i.e. perpendicular to current direction
+% I             global energy of the point set (scalar)
+% g             [OPTIONAL] gradient of I at each point. It is projected
+%               onto the tangential plane of the sphere at each point and
+%               is of size D x N.
 %
-% See also FMINUNC, DISTANCE, SEARCHGAMMAPOU, REPULSIONFORCE
+% See also FMINUNC, DISTANCE, MINIMIZEENERGY, GRADIENT
 %
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -75,36 +95,37 @@ function [ I, g ] = EnergyAndGradient( Xvec, D, energy_index, sym_flag )
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%% preparations
 if ~exist('sym_flag','var')
     sym_flag = 0;
 end
 
-%% step 1: compute Euclidean distance map (matrix Dist, size N x N)
 N = size(Xvec,1)/D;
-% note: symmetry flag is considered in PointPotential, dPoitPotential, and 
-% in step 2, but NOT in the following call of Distance
+
+% Note: symmetry flag makes PointPotential and dPoitPotential employ
+% symmetrized kernels. The following call of Distance does not require the
+% symmetry flag for this purpose (in fact it MUST be called w/o symmetry).
 [ d, ~, Y, l ] = Distance( reshape( Xvec, D, N ), 0 );
 
 %% step 2a: evaluate energy
 I = 0.;
 for n=1:N
-
 	% account for the symmetry of Dist, i.e. use only entries below diagonal
 	I = I + PointPotential(d((n+1):N,n), energy_index, sym_flag);
 end
 if( energy_index == -2 )
     if( sym_flag == 0 )
-        % add the diagonal part to the energy
+        % add the diagonal part to the energy, i.e. "self-energy"
 %         I = ( 2 * I + 0 * PointPotential(0, energy_index, 0) ) / N^2;
         I = ( 2 * I + N * PointPotential(0, energy_index, 0) ) / N^2;
     else
         % if sym_flag==1, then I already contains the kernel values w.r.t.
-        % antipodes, i.e. twice as many terms in the sum: N^2 -> 2*N^2
+        % antipodes, i.e. twice as many terms in the sum: N^2 -> 2 * N^2
         % further, the diagonal of the antipodal part is zero -> only N
         % times the diagonal (i.e. N*2), as in the asymmetric case
         I = ( 2 * I + N * PointPotential(0, energy_index, 0) ) / (2 * N^2 );
     end
-else % classical case (log, Riesz). ATTENTION: different normalization!
+elseif( energy_index == -1 || energy_index > 0 ) % classical case (log, Riesz). ATTENTION: different normalization!
     if( sym_flag == 0 )
         I = 2 * I / (N * (N-1));
     else
@@ -113,6 +134,9 @@ else % classical case (log, Riesz). ATTENTION: different normalization!
         I = (2 * I + N * PointPotential(2, energy_index, 0)) ...
             / (2 * N * (N-1) + N);
     end
+else
+    error(['EnergyAndGradient not yet implemented for energy_index = ',...
+        num2str(energy_index)])
 end
 if isnan(I)
     error('I is NaN')
@@ -120,33 +144,33 @@ end
 
 if( nargout == 2 )
     %% step 2b: evaluate gradient
-    % the chain rule is required here: derivative of I w.r.t. n-th
-    % direction is
-    %     1/N^2 * sum_(j=1,..,N) k'(d(n,j)) / d(n,j) * ( Y(:,n) - Y(:,j) )
-    % implemented in a vectorized manner
+    % the chain rule is required here: derivative of I w.r.t. coordinates
+    % of the n-th point is
+    %     1/N^2 * sum_(j=1,..,N) k'(d(j,n)) / d(n,j) * ( Y(:,n) - Y(:,j) )
     g = zeros( D, N );
     for n=1:N
-        % column vecotor of the kernel derivatives
+        % column vector of the kernel derivatives evaluated at d(:,n)
         dPP     = dPointPotential(d(:,n), energy_index, sym_flag);
-        % column vector containing the quotions of kernel derivatives and
+        % column vector containing the quotients of kernel derivatives and
         % corresponding distances d
         dPP_d   = dPP ./ d(:,n);
         % exclude undefined "self-gradient". physically: no force of a
         % point on itself
         dPP_d(n)= 0;
-        % first part of the gradient ( Y(:,n)-part )
-        g(:,n)  = sum(dPP_d) * Y(:,n);
-        % second part of the gradient ( Y(:,j)-part )
-        g(:,n)  = g(:,n) - Y * dPP_d;
-        % the vector g is now projected into the tangent plane
-        % defined by the unit vector y, n.e. the gradient of
-        % I w.r.t. the direction x_i is perpendicular to x_i by
-        % definition
+        % assemble the gradient (vectorized implementation)
+        g(:,n)  = sum(dPP_d) * Y(:,n) - Y * dPP_d;
+        % the vector g(:,n) is now projected onto the tangent plane of the
+        % sphere at the n-th point Y(:,n)
         g(:,n)  = (g(:,n) - Y(:,n)'*g(:,n) * Y(:,n)) /l(n);
     end
     % reshape g --> proper dimension for the use with fminunc etc.
-    % and apply appropriate factor 1/N^2
-    g = reshape(g, [], 1) / N^2;
+    g = reshape(g, [], 1);
+    % apply appropriate normalization factor
+    if( energy_index == -2 )
+        g = g/N^2;
+    else
+        g = g/(N*(N-1));
+    end
     if( sym_flag == 1)
         g = g/2;
     end

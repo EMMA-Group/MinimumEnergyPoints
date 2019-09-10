@@ -1,8 +1,14 @@
+%% Script_ME_Points This is a template-style example script call (e.g. for looping through parameters). For a GUI, see ../Start_ME_Points
+
 %% Example script for generating multiple sets of minimum energy points
 % loops over dimension D, number of points N, energy index s
 % writes .txt and .mat files with the resulting point sets
 % stores the parameters to the .mat file
 % saves a log of all outputs
+%
+% For high-performance computations, make sure to comment non-essential
+% parts of MinimizeEnergy and MinimizeGradient, immediately before the last
+% last display output of the respective cycle.
 
 addpath(genpath('..'));
 c=clock;
@@ -121,11 +127,13 @@ for D = all_D
             parameters.creation_date = creation_date;
             
             %% start the energy minimization by fminunc
+            disp('------------------------------------')
             disp('Use fminunc to minimize energy...')
             tic
             [ X, nn_xi, X0, nn_xi0, cyc ] = MinimizeEnergy( D, N, n_it_energy,  n_cycle_energy, Xstart, s, sym_flag );
             toc
             %% start the explicit gradient minimization
+            disp('------------------------------------')
             disp('Use lsqnonlin to minimize gradient...')
             tic
             X = MinimizeGradient( D, N, n_it_gradient, n_cycle_gradient, X, s, sym_flag );

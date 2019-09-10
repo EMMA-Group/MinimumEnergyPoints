@@ -1,8 +1,10 @@
-function [meshnorm, largestgap] = MeshNorm(X, Y, sym_flag)
+function [meshnorm, largestgap_position] = MeshNorm(X, Y, sym_flag)
 %% MESHNORM returns the mesh norm of a spherical point set X, where the
 % full sphere is approximated by another, very large point set Y. Also,
 % optionally, the column of Y that has the maximum nearest neighbor
-% distance to X is returned as largestgap.
+% distance to X is returned as largestgap_position.
+%
+% The Euclidean distance function is employed here.
 %
 % INPUTS
 % X            matrix D-by-Nx, normalized columns
@@ -12,7 +14,7 @@ function [meshnorm, largestgap] = MeshNorm(X, Y, sym_flag)
 %
 % OUTPUTS
 % meshnorm     an approximation to the mesh norm
-% largestgap   an approximation to the position of the largest gap
+% largestgap_position   an approximation to the position of the largest gap
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % COPYRIGHT NOTES
@@ -70,16 +72,14 @@ function [meshnorm, largestgap] = MeshNorm(X, Y, sym_flag)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% firstly, do some consistency checks
+%% do some consistency checks
 if size(X,1) ~= size(Y,1)
     error('size(X,1) must be the same as size(Y,1)');
 end
 
-if size(Y,2) <= size(X,2)
+if size(Y,2) <= size(X,2)*3 % TODO insert empirical factor depending on D and Nx
     warning('size(X,2) should be (significantly) smaller than size(Y,2)!');
 end
-
-
 
 if ~exist('sym_flag','var')
     sym_flag = 0;
@@ -87,7 +87,7 @@ elseif sym_flag ~= 0 && sym_flag ~= 1
     error('sym_flag must be either 0 or 1')
 end
 
-N       = size(X,2);
+%% go
 [XX]    = RenormalizeColumns(X);
 [YY]    = RenormalizeColumns(Y);
 M0      = XX'*YY;
@@ -107,7 +107,7 @@ end
 min_d = min(d,[],1);   % row vector with nearest neighbor distances for all test points in Y
 [meshnorm, largestgap_index] = max(min_d); % maximum nearest neighbor distance, and the corresponding point index of Y
 if nargout > 1
-    largestgap = YY(:,largestgap_index);
+    largestgap_position = YY(:,largestgap_index);
 end
 
 end

@@ -1,3 +1,5 @@
+%% Start_ME_Points starts the GUI. For an example script call (e.g. when looping through parameters), see examples/Script_ME_Points
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % COPYRIGHT NOTES
 % 

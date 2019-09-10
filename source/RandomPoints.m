@@ -1,23 +1,22 @@
-function [ fig ] = MultiEDF( X, sym_flag )
-%MULTIEDF plots empirical cumulative distribution functions for all of the
-%directions in X. More precisely, X contains the directions as columns, and
-%their distances are computed by calling Distance.
+function [ X ] = RandomPoints( D, N )
+%% RANDOMPOINTS produces a set of N random points in D dimensions.
+%  The set's corresponding probability density is constant on the unit
+%  hypersphere.
 %
-% INPUT
-% X             matrix containing directions as columns. will be normalized
-% sym_flag      [optional] if 1, then plot CDF only for distances up to
-%               pi/2
+%  Inputs
+%  D          dimension of the points
+%  N          number of requested points
 %
-% OUTPUT
-% fig           handle to the created figure
+%  Outputs
+%  X          matrix D-by-N containing the resulting (normalized)
+%             points as columns
 %
-% See also PLOTEDF
-% 
+%  See also RENORMALIZECOLUMNS, GENERATEPOINTS
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % COPYRIGHT NOTES
 %
-% MultiEDF.m
+% RandomPoints.m
 % Copyright (C) 2019 by Felix Fritzen and Oliver Kunc
 %
 % This program is free software: you can redistribute it and/or modify
@@ -70,36 +69,10 @@ function [ fig ] = MultiEDF( X, sym_flag )
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% check inputs
-if exist('sym_flag','var')
-    if sym_flag ~= 0 && sym_flag ~= 1
-        error('sym_flag must be either 0 or 1')
-    end
-else
-    sym_flag = 0;
+rng('shuffle')
+if length(D)~=1 || length(N)~=1
+    error(['size(D) = ',num2str(size(D)),', size(N) = ',num2str(size(N))])
 end
+X   = RenormalizeColumns(randn( D, N ));
 
-fig = figure;
-
-% compute full Euclidean distance matrix
-d = Distance(X);
-
-% plot all CDFs
-for n=1:size(d,1)
-    % Plot
-    cdfplot(d(:,n))
-    hold on
-end
-
-% rescale x-axis
-if sym_flag == 1
-    xlim([0 sqrt(2)])
-else
-    xlim([0 2])
-end
-
-
-
-
-end
 

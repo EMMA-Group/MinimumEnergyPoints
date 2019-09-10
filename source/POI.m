@@ -6,17 +6,17 @@ function [POI_RMSE, POI_normdiff] = POI(Xi_training, Xi_training_vali, ...
 % 
 % Inputs
 % Xi_training       matrix of geodesic distances between training
-%                   directions, size N-by-N
+%                   points, size N-by-N
 % Xi_training_vali  matrix of geodesic distances between training
-%                   directions and validation directions, size N-by-Nvali
+%                   points and validation points, size N-by-Nvali
 % gamma             kernel width parameter
-% X_training        training directions, size D-by-N (D = dimension)
-% X_vali            validation directions, size D-by-Nvali
+% X_training        training points, size D-by-N (D = dimension)
+% X_vali            validation points, size D-by-Nvali
 %
 % Outputs
-% POI_RMSE          RMSE of POI for all Nvali validation directions
+% POI_RMSE          RMSE of POI for all Nvali validation points
 % POI_normdiff      pointwise frobenius norms of differences of validation
-%                   directions and interpolated directions
+%                   points and interpolated points
 %
 % See also SEARCHGAMMA, POU
 
@@ -87,7 +87,7 @@ end
 % size of K is N-by-N
 K = exp( - gamma * Xi_training.^2 );
 
-%% compute the kernel function zeta for all validation directions
+%% compute the kernel function zeta for all validation points
 % size of k is N-by-Nvali
 zeta = exp( -gamma * Xi_training_vali .^ 2 );
      
@@ -97,13 +97,13 @@ zeta = exp( -gamma * Xi_training_vali .^ 2 );
 % of the i-th validation case
 w = K \ zeta;
 
-%% interpolate validation directions
+%% interpolate validation points
 % this should be X_vali in order to satisfy
 % the partition of unity property (POI)
 X_interpolated = X_training * w;
 
 %% compute error of partition
-% rooted mean square error w.r.t. identity on set of validation directions
+% rooted mean square error w.r.t. identity on set of validation points
 temp = sum( (X_interpolated - X_vali).^2 );
 POI_normdiff = sqrt( temp );
 Nvali = size(Xi_training_vali,2);
@@ -112,6 +112,6 @@ POI_RMSE = sqrt( sum(temp)/Nvali );
 %% some handy plotting routine. opens new figure window at every call!
 % figure('Name', ['POI: diff. to identity, gamma = ', num2str(gamma)], 'NumberTitle', 'off'); 
 % plot(sort(POU_normdiff,'ascend'));
-% xlabel('case of evaluation direction')
-% ylabel('POI_normdiff between vali directions and their interplants')
+% xlabel('case of evaluation point')
+% ylabel('POI_normdiff between vali points and their interplants')
 % grid on

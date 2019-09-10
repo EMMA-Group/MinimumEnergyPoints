@@ -1,19 +1,26 @@
 function [NN_MinMeanMax, meshnorm, meshratio, largestgap] = NN_and_mesh_statistics(X,sym_flag,Ny,Y)
 %% NN_AND_MESH_STATISTICS compute nearest neighbor (NN) and mesh statistics
+% of a spherical point set X. Needs very large point set Y for the
+% mesh norm, e.g. size(Y,2)=1e5 is usually adequate. The
+% largestgap_position is chosen among the columns of Y.
+%
+% The Euclidean distance function is employed atm. This function is modular
+% w.r.t. the distance function.
 %
 % Inputs
-% X          directions ( D-by-N matrix )
+% X          points ( D-by-N matrix )
 % sym_flag   symmetry flag (i.e. consider point set X and -X if sym_flag == 1)
-% Ny         number of test points
-% Y          [optional] test points ( D-by-Ny matrix ). if not provided,
+% Ny         [OPTIONAL] number of test points
+% Y          [OPTIONAL] test points ( D-by-Ny matrix ). if not provided,
 %            then will be initialized randomly.
 % 
 % Outputs
 % NN_MinMeanMax  
-% meshnorm          mesh norm
-% meshratio         mesh ratio (2 * ratio of meshnorm and smallest nearest neighbor distance)
-% largestgap        largest gap in mesh (point coordinate within Y leading to
-%                   the largest distance w.r.t. X)
+% meshnorm          mesh norm (i.e. circumference at largestgap_position)
+% meshratio         mesh ratio (2 * ratio of meshnorm and smallest nearest
+%                   neighbor distance)
+% largestgap_position        point coordinate within Y leading to the
+%                   largest nearest neighbor distance w.r.t. X)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % COPYRIGHT NOTES
@@ -71,14 +78,7 @@ function [NN_MinMeanMax, meshnorm, meshratio, largestgap] = NN_and_mesh_statisti
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% disp('Calculating NN statistics')
-[~, NN]          = Distance(X,sym_flag);
-NN_min           = min (NN);
-NN_mean          = mean(NN);
-NN_max           = max (NN);
-NN_MinMeanMax    = [NN_min NN_mean NN_max];
-
-% disp('Calculating "mesh" statistics')
+%% preparation
 if ~exist('Ny','var')
     Ny  = max( 10 * size(X,2), 1e5 );  % the "full" sphere, should be very fine
 elseif Ny <= 0
@@ -88,9 +88,18 @@ if exist('Y','var') && size(Y,2)~=Ny
     error(['dimension mismatch: Ny = ',num2str(Ny),' size(Y) = ',num2str(size(Y))]);
 end
 
-% mesh ratio = mesh norm / NN_min * 2
 if ~exist('Y','var')
-    Y                    = RandomDirections(size(X,1),Ny);
+    Y                    = RandomPoints(size(X,1),Ny);
 end
+
+%% mesh statistics
+[~, NN]          = Distance(X,sym_flag);
+NN_min           = min (NN);
+NN_mean          = mean(NN);
+NN_max           = max (NN);
+NN_MinMeanMax    = [NN_min NN_mean NN_max];
+
+%% mesh ratio, norm, and largest gap position
+% mesh ratio = mesh norm / NN_min * 2
 [meshnorm, largestgap]   = MeshNorm(X,Y,sym_flag);
 meshratio                = 2.0 * meshnorm / NN_min;

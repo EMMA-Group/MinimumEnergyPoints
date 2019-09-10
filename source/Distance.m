@@ -1,24 +1,31 @@
-function [ d, nn_d, Y, l ] = Distance( X, sym_flag )
-%% DISTANCE  Compute the Euclidean distances of the directions
-% defined by the columns of X (with or without consideration of point
-% symmetry)
+function [ d, d_nn, Y, l ] = Distance( X, sym_flag )
+%% DISTANCE  Compute the Euclidean distances of the spherical points
+% defined by the columns of X (with or without consideration of symmetry
+% w.r.t. the origin). Operates on normalized point coordinate vectors.
+%
+% IMPORTANT: for the generation of minimum energy points with symmetric
+% kernels, this function must be called withOUT symmetry (i.e. sym_flag==0
+% or omit) because the symmetric kernel implementations (see PairPotential
+% and dPairPotential) compute the antipodal distances on their own. The
+% sym_flag is needed mostly for mesh statistics.
 % 
 % Inputs
-% X           D x N matrix containing nonzero column vectors;
-%             each column will be interpreted in terms of
-%             one sampling direction
-% sym_flag    [OPTIONAL]  1    --> use symmetrized distance function
-%             [ i.e. Dist_ij = acos( abs (X_i . X_j)/(l_i * l_j) ) ]
-%             otherwise: Dist_ij = acos( (X_i . X_j)/(l_i * l_j) ) ]
+% X           D x N matrix containing the point coordinates as columns
+% sym_flag    [OPTIONAL] if 1, then d_nn is of size 2*N x 2*N. The upper
+%             left and lower right N x N blocks each contain the distances
+%             of the explicitly provided points X, the off-diagonal blocks
+%             contain the distances of X to their antipodes -X.
 %
 % Outputs
-% d           Euclidean distance matrix, size N x N
-% nn_d        nearest neighbor distance of every point / within every
-%             column of d ( nn_d = min( d + 2*eye(N) ) ), size 1 x N
+% d           Euclidean distance matrix. Size N x N if sym_flag==0 or not
+%             provided, size 2*N x 2*N if sym_flag==1.
+% d_nn        nearest neighbor (=nn) distance of every point / within every
+%             column of d. Size 1 x N if sym_flag==0 or not provided, size
+%             1 x 2*N if sym_flag==1.
 % Y           copy of X with normalized columns
 % l           vector containing the length of each column of X
 %
-% See also RENORMALIZECOLUMNS, SEARCHGAMMAPOU
+% See also RENORMALIZECOLUMNS, DISTANCEGEODESIC
 %
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -88,18 +95,20 @@ else
 end
 
 N       = size(X,2);
+% normalize
 [Y, l]  = RenormalizeColumns(X);
+% pairwise scalar products
 M0      = Y'*Y;
 % make sure M0 is symmetric
 M0      = 0.5*(M0+M0');
 % make sure that no values exceeding +/- 1 exist
 M0      = max( min(  M0(:,:) , 1.0 ), -1.0 );
-% compute d
+% compute Euclidean distances
 d = sqrt(2*(1-M0));
 
-% if symmetrized points are provided, then the output nn_d has
-% twice as many entries as number of points requested and
-% d is of dimension (2*N)-by-(2*N)
+% if sym_flag==1, compute also the distances to the antipodes of X. Return
+% the distance matrix d of the point coordinate matrix [X,-X]. Then d is of
+% size 2*N x 2*N.
 if( sym_flag == 1 )
 	d = [ d, sqrt(max(0,4-d.^2)); sqrt(max(0,4-d.^2)), d ];
 end
@@ -108,8 +117,8 @@ if nargout>=2
     % NOTE: the diagonal must be modified as it contains a zero distance,
     % as far as the nearest neighbor statistics is concerned
     if( sym_flag == 1 )
-        nn_d = min( d + 2*eye(2*N) );
+        d_nn = min( d + 2*eye(2*N) );
     else
-        nn_d = min( d + 2*eye(N) );
+        d_nn = min( d + 2*eye(N) );
     end
 end

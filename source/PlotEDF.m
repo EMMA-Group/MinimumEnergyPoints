@@ -1,9 +1,10 @@
 function PlotEDF(X, sym_flag, ax)
 %PLOTEDF plots the empirical cumulative distribution function of a given
-%set of directions (X) to the provide axes (ax), considering the symmetry
-%flag (sym_flag).
+% set of points X (size D x N, where D is the Euclidean dimension and N is
+% is the number of points) to the provided axes ax, considering the
+% antipodes _explicitly_ if sym_flag==1.
 %
-% See also PLOTPOINTSONSPHERE, DISTANCE, MULTIEDF
+% See also PLOTPOINTSONSPHERE, DISTANCE, ECDF
 %
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -61,20 +62,23 @@ function PlotEDF(X, sym_flag, ax)
 % URL   dx.doi.org/...
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
-    d=Distance(X,sym_flag);
-    hold(ax,'on')
-    plot(ax,[sqrt(2),sqrt(2)],[0,1],'k-.')
-    text(1.4142,0.95,'x=$\sqrt{2}\rightarrow$','HorizontalAlignment','right','Interpreter','latex')
-    xlim([0,2])
-    for i_plot = 1:size(X,2)
-        ecdf(ax, d(:,i_plot));
-    end
-    grid(ax,'on')
-    xlabel('x [-] (Euclidean distance)')
-    ylabel('P( |X-Y| < x ) [-]')
-    hold(ax,'off')
 
+%% preparation
+% compute Euclidean distances
+d = Distance(X,sym_flag);
+% plot vertical line with LaTeX label "\sqrt{2}"
+hold(ax,'on')
+plot(ax,[sqrt(2),sqrt(2)],[0,1],'k-.')
+text(1.4142,0.95,'x=$\sqrt{2}\rightarrow$','HorizontalAlignment','right','Interpreter','latex')
+
+%% plot EDF's
+xlim([0,2])
+for i_plot = 1:size(X,2)
+    ecdf(ax, d(:,i_plot));
+end
+grid(ax,'on')
+xlabel('x [-] (Euclidean distance)')
+ylabel('P( |X-Y| < x ) [-]')
+hold(ax,'off')
 
 end
-

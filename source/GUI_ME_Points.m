@@ -18,7 +18,7 @@ function varargout = GUI_ME_Points(varargin)
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
 %
-% See also: GUIDE, GUIDATA, GUIHANDLES, GENERATEDIRECTIONS
+% See also: GUIDE, GUIDATA, GUIHANDLES, GENERATEPOINTS
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -138,8 +138,8 @@ handles.results.meshratio = [];            % the mesh ratio of X, = mesh norm * 
 handles.results.largestgap = [];           % the coordinate of the largest gap
 handles.results.gamma_POU_value = [];      % value of gamma, optimized to fit constant one function ('partition of unity')
 handles.results.gamma_POU_RMSE = [];       % rooted mean square error of SBF interpolation to fit constant one function
-handles.results.gamma_POI_value = [];      % value of gamma, optimized to act as identity on directions ('partition of identity')
-handles.results.gamma_POI_RMSE = [];       % rooted mean square error of SBF interpolation to act as identity on directions
+handles.results.gamma_POI_value = [];      % value of gamma, optimized to act as identity on points ('partition of identity')
+handles.results.gamma_POI_RMSE = [];       % rooted mean square error of SBF interpolation to act as identity on points
 
 % Disable buttons that should not be pushed at first ...
 set(handles.pushbutton_plotEDF,'enable','off');
@@ -171,8 +171,8 @@ function varargout = GUI_ME_Points_OutputFcn(hObject, eventdata, handles)
 varargout{1} = handles.output;
 
 
-% --- Executes on button press in pushbutton_generate_directions.
-function pushbutton_generate_directions_Callback(hObject, eventdata, handles)
+% --- Executes on button press in pushbutton_generate_points.
+function pushbutton_generate_points_Callback(hObject, eventdata, handles)
 
     % Disable all buttons
     SetEnableAllPushbuttons('off', handles, gcbf);
@@ -216,16 +216,16 @@ function pushbutton_generate_directions_Callback(hObject, eventdata, handles)
         if( sym_flag == 1 && mod(N,2)==0 )
             fprintf('# new initialization\n');
             Xstart = eq_point_set(D-1,2*N);
-            handles.parameters.Xstart = RenormalizeColumns( 0.002*RandomDirections(D,N) +  Xstart(:, 1:N) );
+            handles.parameters.Xstart = RenormalizeColumns( 0.002*RandomPoints(D,N) +  Xstart(:, 1:N) );
 %             Xstart = eq_point_set(D-1,N+1);
-%             handles.parameters.Xstart = RenormalizeColumns( 0.001*RandomDirections(D,N) +  Xstart(:, 1:N) );
+%             handles.parameters.Xstart = RenormalizeColumns( 0.001*RandomPoints(D,N) +  Xstart(:, 1:N) );
         else
-            handles.parameters.Xstart = RenormalizeColumns( 0.001*RandomDirections(D,N) + eq_point_set(D-1,N) );
+            handles.parameters.Xstart = RenormalizeColumns( 0.001*RandomPoints(D,N) + eq_point_set(D-1,N) );
         end
     elseif get(handles.radiobutton_init_random,'value') == 1
         handles.parameters.Xstart_origin = 'random';
         handles.parameters.Xstart_name = 'random';
-        handles.parameters.Xstart = RandomDirections(D,N);
+        handles.parameters.Xstart = RandomPoints(D,N);
     elseif get(handles.radiobutton_init_workspace,'value') == 1
         handles.parameters.Xstart_origin = 'workspace';
         % handles.parameters.Xstart_name was set by corresponding pushbutton_export_workspace callback
@@ -241,11 +241,13 @@ function pushbutton_generate_directions_Callback(hObject, eventdata, handles)
     handles.parameters.creation_date = datestr(now);
     
     % TODO introduce fixpoint functionality
+    disp('------------------------------------')
     disp('Use fminunc to minimize energy I ...')
     tic
     X = MinimizeEnergy( D, N, n_it_energy,  n_cycle_energy, Xstart, energy_index, sym_flag );
     toc
 
+    disp('------------------------------------')
     disp('Use lsqnonlin to minimize gradient g ...')
     tic
     X = MinimizeGradient( D, N, n_it_gradient, n_cycle_gradient, X, energy_index, sym_flag );
@@ -289,7 +291,7 @@ function pushbutton_generate_directions_Callback(hObject, eventdata, handles)
     % Enable all pushbuttons
     SetEnableAllPushbuttons('on', handles, gcbf);
     
-    disp(['Finished gegnerating ', num2str(N), ' directions in ', ...
+    disp(['Finished gegnerating ', num2str(N), ' points in ', ...
         num2str(D), ' dimensions.']);
     
     % Change back to directory that was active on click time
@@ -960,7 +962,7 @@ end
 % auxiliary function: set 'enable' status of all pushbuttons
 function SetEnableAllPushbuttons(state, handles, current_fig)
 if strcmp(state,'off')
-    set(handles.pushbutton_generate_directions,'enable','off');
+    set(handles.pushbutton_generate_points,'enable','off');
     set(handles.pushbutton_plotEDF,'enable','off');
     set(handles.pushbutton_load_workspace,'enable','off');
     set(handles.pushbutton_load_mat_file,'enable','off');
@@ -973,7 +975,7 @@ if strcmp(state,'off')
     set(handles.pushbutton_gamma_POI,'enable','off');
     guidata(current_fig, handles);
 elseif strcmp(state,'on')
-    set(handles.pushbutton_generate_directions,'enable','on');
+    set(handles.pushbutton_generate_points,'enable','on');
     set(handles.pushbutton_plotEDF,'enable','on');
     set(handles.pushbutton_load_workspace,'enable','on');
     set(handles.pushbutton_load_mat_file,'enable','on');

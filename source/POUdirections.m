@@ -1,15 +1,15 @@
-function [POU_err diff_one] = POUdirections(X_training, X_vali, gamma)
+function [POU_err diff_one] = POUpoints(X_training, X_vali, gamma)
 % POU  compute the error of partition of unity (POU) from provided
-% directions and gamma, calling POU.m
+% points and gamma, calling POU.m
 % The measure of error can be adjusted within this function.
 % 
 % Inputs
-% X_training    coordinate matrix of training directions, size D-by-N
-% X_vali        coordinate matrix of validation directions, size D-by-Nvali
+% X_training    coordinate matrix of training points, size D-by-N
+% X_vali        coordinate matrix of validation points, size D-by-Nvali
 % gamma         kernel width parameter
 %
 % Outputs
-% POU_err       RMSE of POU for all Nvali validation directions
+% POU_err       RMSE of POU for all Nvali validation points
 % diff_one      pointwise difference of sum of weights and one
 %
 % See also EQ_POINT_SET, ENERGY, DISTANCE,
@@ -18,7 +18,7 @@ function [POU_err diff_one] = POUdirections(X_training, X_vali, gamma)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % COPYRIGHT NOTES
 %
-% POUdirections.m
+% POUpoints.m
 % Copyright (C) 2019 by Felix Fritzen and Oliver Kunc
 %
 % This program is free software: you can redistribute it and/or modify

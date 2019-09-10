@@ -6,11 +6,11 @@ function [ gamma_best, POU_L2error_best, V, gammaspace, POU_L2error_all ]...
 % 
 % Inputs
 % X           D x N matrix containing normalized columns; each column is
-%             one sampling/training direction
-% vali        encodes the directions on which the POU will be evaluated
+%             one sampling/training point
+% vali        encodes the points on which the POU will be evaluated
 %              if integer -> equal area partition
-%              if matrix of size(vali,1)=D -> use the columns as directions
-%              if string, load directions from textfile via dlmread
+%              if matrix of size(vali,1)=D -> use the columns as points
+%              if string, load points from textfile via dlmread
 % gamma_min   minimum gamma to be considered
 % gamma_max   maximum gamma to be considered
 % ngamma      number of gammas to investigate
@@ -19,7 +19,7 @@ function [ gamma_best, POU_L2error_best, V, gammaspace, POU_L2error_all ]...
 %                   approximated best
 %                   if 'I': partition of identity, i.e. the objective is to
 %                   optimize gamma s.t. the (vectorial) identity function
-%                   (i.e. mapping directions onto themselves) is
+%                   (i.e. mapping points onto themselves) is
 %                   approximated best
 % xitrunc     [OPTIONAL] max. angle at which the kernel is truncated
 % do_plot     [OPTIONAL] if true, then plot
@@ -27,8 +27,8 @@ function [ gamma_best, POU_L2error_best, V, gammaspace, POU_L2error_all ]...
 % Outputs
 % gamma_best        gamma minimizing the average POU error
 % RMSE              rooted mean square error (mean w.r.t. all validation
-%                   directions)
-% V                 the validation directions ( D x Nvali )
+%                   points)
+% V                 the validation points ( D x Nvali )
 %
 % See also POU, POI, DISTANCE
 %
@@ -98,7 +98,7 @@ N = size(X,2);
 D = size(X,1);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% choose or generate validation directions
+%% choose or generate validation points
 if ischar(vali)
     try
         Y=dlmread(vali);
@@ -108,16 +108,16 @@ if ischar(vali)
     end
     V=RenormalizeColumns(Y);
     Nvali = size(Y,2);
-    disp([' using ' num2str(Nvali) ' validaton directions from file ' vali])
+    disp([' using ' num2str(Nvali) ' validaton points from file ' vali])
 elseif length(vali)==1
-    disp([' using ' num2str(vali) ' EQ directions'])
+    disp([' using ' num2str(vali) ' EQ points'])
     Nvali = vali;
     V = RenormalizeColumns( eq_point_set(D-1,Nvali) );%+ 0.01* RenormalizeColumns(randn( D, Nvali )) );
-%     V = RandomDirections(D,Nvali);
+%     V = RandomPoints(D,Nvali);
 elseif size(vali,1)==D
     V = vali;
     Nvali = size(V,2);
-    disp([' using ' num2str(Nvali) ' directly provided validation directions'])
+    disp([' using ' num2str(Nvali) ' directly provided validation points'])
 else
     error(['argument vali (inputname: ' inputname(2) ') does not meet requirements'])
 end
@@ -134,7 +134,7 @@ xi_input_vali = real( acos( min( 1, max( -1, X'*V) ) ) );
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% output some information on the input data, and do input checks
 fprintf('###################################################################\n');
-fprintf('# information on the provided sampling directions:\n');
+fprintf('# information on the provided sampling points:\n');
 fprintf('# min nearest neighbor distance ............ %8.5f rad\n', min(NN_input) );
 fprintf('# mean nearest neighbor distance ........... %8.5f rad\n', mean(NN_input) );
 fprintf('# max nearest neighbor distance ............ %8.5f rad\n', max(NN_input) );

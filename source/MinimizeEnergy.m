@@ -1,31 +1,48 @@
-function [ X, nn_xi, X0, nn_xi0, bestcycle ] = MinimizeEnergy( D, N, nit, ncycle, Xstart, energy_index, sym_flag )
-%% MINIMIZEENERGY produces a set of N directions of
-%  dimension D such that the global energy computed from
-%  the sum of kernel values is minimized (numerically and locally)
-%  this uses the Matlab built in function fminunc and re-normalizes
-%  the vectors in between cycles.
+function [ X, d_nn, X0, d_nn0, bestcycle ] = MinimizeEnergy( D, N, nit, ncycle, Xstart, energy_index, sym_flag )
+%% MINIMIZEENERGY produces a set of N minimum energy points on the
+% (D-1)-dimensional hypersphere in the D-dimensional Euclidean space. The
+% energy is the s-energy as in the paper, here symbolically s=energy_index.
+% This function uses the Matlab/Octave built in function fminunc, moving
+% the points off the sphere. Therefore, the execution of fminunc is limited
+% to nit iterations, after which the point coordinates are re-normalized.
+% Then, fminunc is called again. Each execution of fminunc is called a
+% "cycle".
 %
-%  Inputs
-%  D          dimension of the directions
-%  N          number of requested directions
-%  nit        number of iterations per cycle
-%  ncycle     number of cycles. coordinates are normalized after each cycle
-%  Xstart     initial point set
-%  energy_index index of the energy function to be used, corresponding to
-%             's' in the paper.
+% After the stopping criteria are met the first time, a random perturbation
+% is applied and at least one more "retry" cycle is carried out. This is to
+% prevent getting trapped in a shallow local minimum.
+%
+% The main stopping criterion is the norm of the tangential part g of the
+% energy's gradient. This may be changed at will.
+%
+% Inputs
+% D             dimension of the containing Euclidean space
+% N             number of points
+% nit           number of iterations per call of fminunc (i.e. per cycle)
+% ncycle        number of fminunc calls (here: "cycles"). coordinates are
+%               normalized after each cycle.
+% Xstart        [OPTIONAL] initial point set, size D x N (or empty). If
+%               empty or if not provided, then perturbed Equal Area Points
+%               are used.
+% energy_index  index of the energy function to be used, corresponding to
+%               "s" in the paper.
 %               energy_index == -2: LOG
 %               energy_index == -1: log
 %               energy_index  >  0: Riesz
-%  sym_flag   use symmetrized ernergy function
+% sym_flag      [OPTIONAL] use symmetrized kernel function if sym_flag==1
 %
-%  Outputs
-%  X          matrix D-by-N containing the resulting directions
-%  nn_xi      nearest neighbor distance [radian] of resulting directions
-%  X0         initial directions, D-by-N
-%  nn_xi0     nearest neighbor distance [radian] of initial directions
-%  bestcycle  the cycle number in which the minimum energy was reached
+% Outputs
+% X             matrix D x N containing the resulting points' Euclidean
+%               coordinates as columns
+% d_nn          nearest neighbor distance of resulting points
+% X0            initial point set, D x N. equals Xstart if it was provided.
+% d_nn0         nearest neighbor distance of initial points
+% bestcycle     the cycle number in which the minimum energy was reached,
+%               i.e. the alternating call of fminunc and renormalization
+%               does not necessarily lead to a monotonic decreas of the
+%               energy I
 %
-%  See also ENERGY, DISTANCE, FMINUNC, RENORMALIZECOLUMNS
+% See also FMINUNC, RENORMALIZECOLUMNS, EQ_POINT_SET, MINIMIZEGRADIENT
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % COPYRIGHT NOTES
@@ -85,34 +102,6 @@ function [ X, nn_xi, X0, nn_xi0, bestcycle ] = MinimizeEnergy( D, N, nit, ncycle
 
 addpath(genpath('../eq_sphere_partitions'));
 
-%% settings for fminunc
-%  NOTE: * after each nit iterations the point set is renormalized this
-%          makes the abortion criterion more reliable (this is one cycle)
-%        * this is repeated of a numbe rof cycles
-%        * alternative settings are possible;
-%        * for the trust region algorithm memory requirement is massive
-%        * tolerances are usually not reached before the iteration count
-%        * 'bfgs' instead of 'steepdesc' did not show better performance but
-%          may be worth a try (then: less iterations <--> same computing time)
-%  %  options = optimoptions('fminunc',      ...
-%  %      'SpecifyObjectiveGradient', true,  ...
-%  %      'algorithm',                'quasi-newton',    ...
-%  %      'hessupdate',               'steepdesc',       ...
-%  %      'steptolerance',            1e-6, ...
-%  %      'functiontolerance',        1e-8, ...
-%  %      'optimalitytolerance',      1e-8, ...
-%  %      'MaxIterations',            nit, ...
-%  %      'display',                  'none');
-options = optimoptions('fminunc',      ...
-    'SpecifyObjectiveGradient', true,  ...
-    'algorithm',                'quasi-newton',    ...
-    'hessupdate',               'bfgs',       ...
-    'steptolerance',            1e-12, ...
-    'functiontolerance',        1e-12, ...
-    'optimalitytolerance',      1e-12, ...
-    'MaxIterations',            nit, ...
-    'display',                  'none');
-
 %% energy index
 if ~isnumeric(energy_index)
     error('energy index must be numeric')
@@ -126,6 +115,7 @@ elseif energy_index == -1
 else
     disp('Case: s = LOG')
 end
+
 %% symmetry flag
 if ~exist('sym_flag','var')
     sym_flag = 0;
@@ -138,7 +128,6 @@ if sym_flag == 1
 else
     disp('Symmetry flag: OFF')
 end
-
 
 %% initial guess: either provided, or equal area point set with random perturbation
 if ~exist('Xstart','var') % this also means sym_flag == 0 because of ordering!!!
@@ -157,9 +146,9 @@ else
         else
             N_X0 = N;
         end
-        disp('creating initial directions as perturbed EQ points')
+        disp('creating initial points as perturbed EQ points')
         X0 = RenormalizeColumns( 0.01*randn( D, N_X0) + eq_point_set( D-1, N_X0) );
-%         X0 = RandomDirections(D,N);
+%         X0 = RandomPoints(D,N);
         if sym_flag == 1
             X0 = X0(:,1:end/2);  % ... and remove second half. EQ point sets are sorted nicely.
         end
@@ -168,30 +157,29 @@ end
 X = X0;
 
 %% compute initial residual and information on the distribution
-%% compute distance maps
-[ ~, d0 ] = Distance(X0, sym_flag);
-NN_min      = min(d0);
-NN_max      = max(d0);
-NN_mean     = mean(d0);
-[ff, gg]    = EnergyAndGradient( reshape(X, [], 1), D, energy_index, sym_flag );
+[ ~, d0 ]   = Distance(X0, sym_flag);
+NN_min      = min(d0);  % minimum nearest neighbor distance
+NN_mean     = mean(d0); % mean nearest neighbor distance
+NN_max      = max(d0);  % maximum nearest neighbor distance
+[I, g]      = EnergyAndGradient( reshape(X, [], 1), D, energy_index, sym_flag );
 
-fprintf('initial:    I= %16.8e, |g| = %16.8e .. NN %6.4f / %6.4f / %6.4f ... range %7.5f; sqrt(V(NN)) %10.6f\n', ...
-    ff, norm(gg), NN_min, NN_mean, NN_max, NN_max - NN_min, sqrt(var(d0)) );
+fprintf('initial:    I= %16.8e, |g| = %16.8e .. NN %6.4f / %6.4f / %6.4f ... NN range %7.5f; sqrt(Var(NN)) %10.6f\n', ...
+    I, norm(g), NN_min, NN_mean, NN_max, NN_max - NN_min, sqrt(var(d0)) );
 
 %% cycle loop
-nretry = 0;
-dX = X;
-jcycle=0;
-bestcycle=0;
-sc=0;
-Xmin = X;
-ggmin = -1;
-while(jcycle<ncycle && sc==0)
+nretry      = 0;    % counts number of retries
+dX          = X;    % difference of point coordinates between cycles
+jcycle      = 0;    % cycle counter
+bestcycle   = 0;    % remembers which cycle had the best result
+Xbest       = X;    % store best point set here (energy may increase later)
+gbest       = -1;   % store best gradient here (gradient norm may increase later)
+sc          = 0;    % success indicator
+while( jcycle<ncycle && sc==0 )
     jcycle=jcycle+1;
     if( jcycle == 1 )
-        % perform a reduced number of iterations in the first run in order
-        % to make sure the renormalization after the big first steps is
-        % considered correctly in the gradient
+        % perform a reduced number of iterations in the first cycle in
+        % order to make sure the renormalization after the big first steps
+        % is considered correctly in the gradient
         options = optimoptions('fminunc',      ...
     'SpecifyObjectiveGradient', true,  ...
     'algorithm',                'quasi-newton',    ...
@@ -212,40 +200,50 @@ while(jcycle<ncycle && sc==0)
     'MaxIterations',            nit, ...
     'display',                  'none');
     end
-    X   = reshape( fminunc( @(x)EnergyAndGradient(x, D, energy_index, sym_flag), reshape( X, [], 1 ), options ), D, N );    %%%%%%%%%%%%%% here is the actual work
+    
+    %%%% ACTUAL WORK OF THE CURRENT CYCLE IS HERE ...
+    X   = reshape( fminunc( @(x)EnergyAndGradient(x, D, energy_index, sym_flag), reshape( X, [], 1 ), options ), D, N );
     X   = RenormalizeColumns(X);
+    %%%%
+    
     dX  = X - dX;
 	if( norm(dX, 'fro')  < sqrt( D*N * 1e-12 ) )
         if( nretry < 1 ) % was 3 before but with next to little gain
+            %%%% RETRY CYCLE
             nretry = nretry + 1;
-            X = X + 1e-5 * RenormalizeColumns( randn( D, N ) ); % modify X
+            X = X + 1e-5 * RenormalizeColumns( randn( D, N ) ); % modify X by random perturbation
             X = RenormalizeColumns( X );
-            fprintf('# changing current directions in order to possibly exit saddle points or local minima!\n');
+            fprintf('# changing current points in order to possibly exit saddle point or local minimum!\n');
+            %%%%
         else
             sc = 1;
             fprintf('# fix point detected; stopping iteration\n');
         end
 	else
-		dX  = X; % backup current direction
+		dX  = X; % backup current point
 	end	
 
-    [ ~, d ] = Distance( X, sym_flag );
-    % additional function calls for evaluation of the direction set after the N-th iteration
-    % not needed except for displaying the quality of the iterate (can be commented)
-    [ ff, gg  ] = EnergyAndGradient( reshape(X, [], 1), D, energy_index, sym_flag );
-    if( ( ggmin  < 0 ) || norm(gg)<ggmin )
-        ggmin=norm(gg);
-        bestcycle=jcycle;
-        Xmin = X;
+    % additional function calls for evaluation of the point set after
+    % the jcycle-th cycle. There is room for optimization here, as this
+    % information might be obtained during the cycle itself <- TODO
+    [ I, g  ] = EnergyAndGradient( reshape(X, [], 1), D, energy_index, sym_flag );
+    if( gbest<0 || norm(g)<gbest )
+        gbest       = norm(g);
+        bestcycle   = jcycle;
+        Xbest       = X;
     end
+    
+    % this is just for outputting the evolution of the nearest neighbor
+    % (NN) statistics. comment this for high-performance calls.
+    [ ~, d ] = Distance( X, sym_flag );
     NN_min      = min(d);
     NN_max      = max(d);
     NN_mean     = mean(d);
-    fprintf('cycle %4i  I= %16.8e, |g| = %16.8e .. NN %6.4f / %6.4f / %6.4f ... range %7.5f; sqrt(V(NN)) %10.6f\n', ...
-        jcycle, ff, norm(gg), NN_min, NN_mean, NN_max, NN_max - NN_min, sqrt(var(d)) );
+    fprintf('cycle %4i  I= %16.8e, |g| = %16.8e .. NN %6.4f / %6.4f / %6.4f ... NN range %7.5f; sqrt(Var(NN)) %10.6f\n', ...
+        jcycle, I, norm(g), NN_min, NN_mean, NN_max, NN_max - NN_min, sqrt(var(d)) );
 end
-X = Xmin;
+X = Xbest;
 disp(['Returning result of cycle ' num2str(bestcycle)])
 
-[~, nn_xi ]  = Distance( X, sym_flag );
-[~, nn_xi0 ] = Distance( X0, sym_flag );
+[~, d_nn ]  = Distance( X, sym_flag );
+[~, d_nn0 ] = Distance( X0, sym_flag );

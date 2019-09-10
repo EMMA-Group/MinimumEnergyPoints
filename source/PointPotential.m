@@ -1,15 +1,28 @@
 function U = PointPotential(d, energy_index, sym_flag)
-
-%% POINTPOTENTIAL computes the sum of repulsion energies corresponding to 
-% given distances
+%% POINTPOTENTIAL computes the potential of one point of a set of spherical
+% points. Let this particular point be x_p. Then the return value is
+% U = sum_(i=1,...,N) k_s(x_p, x_i)
+% where s is the variable "s" in the paper, here s = energy_index.
+%
+% If sym_flag==1, then symmetrized kernels k_s are used. The antipodes are
+% not considered explicitly, i.e. they are not regarded as individual
+% points. Instead, symmetrized kernels are implemented.
+%
+% User-defined kernel functions have to be implemented here and in
+% DPOINTPOTENTIAL.
 %
 % Input
-% d             distances as vector
-% energy_index  index of the energy function to be used
-% sym_flag      use symmetrized point sets
+% d             N x 1 vector of distances of all N points from a single
+%               point of that set (i.e. including one zero self-distance).
+%               In the symmetric case, d does NOT include the distances
+%               to the antipodes, as these distances are computed here
+%               explicitly and efficiently.
+% energy_index  index of the energy function to be used ("s" in the paper)
+% sym_flag      also include the contributions of the antipodes to the
+%               potential
 %
 % Output
-% U             sum of kernel values of the distances in d
+% U             potential of the point 
 %
 % See also DPOINTPOTENTIAL
 
@@ -69,17 +82,14 @@ function U = PointPotential(d, energy_index, sym_flag)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% NOTE 1: the functions k and dk can be modified at will
-% Hoewever, they must do the following:
-% - given an input vector x, k(x) --> sum of k(x_i), with k(x_i) being
-%   the value of point potential for a scalar distance x_i >= 0
-% - dk(x) must return a vector, i.e. dk_i = diff( k(x), x_i )
-% - vectorized implementations are STRONGLY encouraged
-% See below for details
-%% NOTE 2: the symmetry flag has already been checked for consistency in
-% GENERATEDIRECTIONS, hence it is either 0 or 1.
-%% begin choosing the energy function corresponding to energy_index
+%% NOTES ON USER-DEFINED KERNEL FUNCTIONS:
+% - d contains the distances of all points to one point, hence the point
+% potential is the sum of the kernel function evaluated at each entry of d.
+% - also define the symmetrized kernel function
+% - vectorized implementations are STRONGLY encouraged, as this is the
+%   lowest level of the function hierarchy.
 
+%% compute the point potential depending on the energy_index
 if energy_index == -2
     %% LOG case
     U   = sum(  d .* (log(d/2)-1.0) ) + 2*length(d) ;
@@ -103,6 +113,6 @@ elseif energy_index > 0
         U   = U + sum( 1./ (sqrt(4-d.^2).^energy_index) );
     end
 else
-    error('PointPotential not yet implemented for energy_index !>= 0')
+    error(['PointPotential not yet implemented for energy_index = ',...
+        num2str(energy_index)])
 end
-

@@ -5,6 +5,14 @@ function [ x ] = CheckInteger( x, lower_bound )
 %     2) greater than or equal to lower_bound
 % returns x in any case, but may open a dialogue box, informing the user
 % that the check was unsuccessful.
+%
+% Inputs
+% x                 scalar
+% lower_bound       scalar
+%
+% Outputs
+% x                 unmodified input
+%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % COPYRIGHT NOTES

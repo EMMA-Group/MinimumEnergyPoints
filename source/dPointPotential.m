@@ -1,16 +1,31 @@
-function dk = dPointPotential(d, energy_index, sym_flag)
-
-%% DPOINTPOTENTIAL computes the derivative of the repulsion energy that
-% corresponds to input distance
+function dU = dPointPotential(d, energy_index, sym_flag)
+%% DPOINTPOTENTIAL computes the derivative of a point potential w.r.t. the
+% distances of this point to all other points. Let this particular point be
+% x_p. Then the i-th component of the return vector is
+% dk_s(x_p, x_i)
+% where s is the variable "s" in the paper (here s = energy_index), dk_s is
+% the derivative of the kernel function k_s, and x_i is any of the N points
+%
+% If sym_flag==1, then symmetrized kernels k_s are used. The antipodes are
+% not considered explicitly, i.e. they are not regarded as individual
+% points. Instead, symmetrized kernels are implemented.
+%
+% User-defined kernel functions have to be implemented here and in
+% POINTPOTENTIAL.
 %
 % Input
-% d             distances as vector
-% energy_index  index of the energy function to be used
-% sym_flag      use symmetrized point sets
+% d             N x 1 vector of distances of all N points from a single
+%               point of that set (i.e. including one zero self-distance).
+%               In the symmetric case, d does NOT include the distances
+%               to the antipodes, as these distances are computed here
+%               explicitly and efficiently.
+% energy_index  index of the energy function to be used ("s" in the paper)
+% sym_flag      also include the contributions of the antipodes to the
+%               potential
 %
 % Output
-% dk            derivatives of the kernel, evaluated at the entries of d
-%               ( size(d)==size(dk) )
+% dU            derivative of the potential of the current point w.r.t. 
+%               distances of this point to all points (including itself)
 %
 % See also POINTPOTENTIAL
 
@@ -70,37 +85,39 @@ function dk = dPointPotential(d, energy_index, sym_flag)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% NOTE 1: the functions k and dk can be modified at will
-% Hoewever, they must do the following:
-% - given an input vector x, k(x) --> sum of k(x_i), with k(x_i) being
-%   the value of point potential for a scalar distance x_i >= 0
-% - dk(x) must return a vector, i.e. dk_i = diff( k(x), x_i )
-% - vectorized implementations are STRONGLY encouraged
-% See below for details
-%% NOTE 2: the symmetry flag has already been checked for consistency in
-% GENERATEDIRECTIONS, hence it is either 0 or 1.
 
 
+%% NOTES ON USER-DEFINED KERNEL FUNCTIONS:
+% - since the point potential is the sum of the kernel function evaluated
+%   at each entry of d, the derivative with respect to d is the vector of
+%   kernel derivatives evaluated at the entries of d.
+% - also define the symmetrized kernel function's derivative
+% - vectorized implementations are STRONGLY encouraged, as this is the
+%   lowest level of the function hierarchy.
+
+%% compute the derivative of the point potential
 if energy_index == -2
     %% LOG case.
-    dk   = log(d/2);
+    dU   = log(d/2);
     if sym_flag == 1
-        dk   = dk - log(sqrt(4-d.^2)/2) .* d ./ sqrt(4-d.^2);
+        d_antipode = sqrt(4-d.^2);
+        dU   = dU - log(d_antipode/2) .* d ./ d_antipode;
     end
 elseif energy_index == -1
     %% log case.
-    dk   = -1./d;
+    dU   = -1./d;
     if sym_flag == 1
-        dk   = dk + d ./ (4 - d.*d);
+        dU   = dU + d ./ (4 - d.*d);
     end
 elseif energy_index > 0
     %% hyperbolic function as force (no cutoff)
     % dk = - s/d^(s+1)
-    dk   = - energy_index ./ (d.^(energy_index+1));
+    dU   = - energy_index ./ (d.^(energy_index+1));
     if sym_flag == 1
         % dk_sym = -s/d^(s+1) + s*d / sqrt(4-d^2)^(s+2)
-        dk   = dk + energy_index * d ./ ( sqrt(4-d.^2).^(energy_index+2) );
+        dU   = dU + energy_index * d ./ ( sqrt(4-d.^2).^(energy_index+2) );
     end 
+else
+    error(['dPointPotential not yet implemented for energy_index = ',...
+        num2str(energy_index)])
 end
-
-
