@@ -1,6 +1,6 @@
 function [ gamma_best, POU_L2error_best, V, gammaspace, POU_L2error_all ]...
     = SearchGamma( X, vali, gamma_min, gamma_max, ngamma, ...
-      partition_case, xitrunc, do_plot )
+      xitrunc, do_plot )
 % SearchGamma  Find best gamma in a provided range w.r.t. to the rooted 
 % mean square error of the partition of unity (POU). Uses Gaussian kernel.
 % 
@@ -14,13 +14,6 @@ function [ gamma_best, POU_L2error_best, V, gammaspace, POU_L2error_all ]...
 % gamma_min   minimum gamma to be considered
 % gamma_max   maximum gamma to be considered
 % ngamma      number of gammas to investigate
-% partition_case    if 'U': partition of unity, i.e. the objective is to
-%                   optimize gamma s.t. the (scalar) one function is
-%                   approximated best
-%                   if 'I': partition of identity, i.e. the objective is to
-%                   optimize gamma s.t. the (vectorial) identity function
-%                   (i.e. mapping points onto themselves) is
-%                   approximated best
 % xitrunc     [OPTIONAL] max. angle at which the kernel is truncated
 % do_plot     [OPTIONAL] if true, then plot
 %
@@ -30,7 +23,7 @@ function [ gamma_best, POU_L2error_best, V, gammaspace, POU_L2error_all ]...
 %                   points)
 % V                 the validation points ( D x Nvali )
 %
-% See also POU, POI, DISTANCE
+% See also POU, DISTANCE
 %
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -141,19 +134,11 @@ fprintf('# max nearest neighbor distance ............ %8.5f rad\n', max(NN_input
 fprintf('# std. dev. of nearest neighbor distance ... %8.5f rad\n', sqrt(var(NN_input)) );
 fprintf('# normalized third moment .................. %8.5f\n',  mean( (NN_input-mean(NN_input)).^3)/(var(NN_input).^1.5) );
 fprintf('###################################################################\n');
-fprintf('# try finding gamma minimizing the\n# average ')
-if strcmp(partition_case,'I')
-    fprintf('POI');
-elseif strcmp(partition_case,'U')
-    fprintf('POU');
-else
-    msgbox('ERROR in SearchGamma: partition_case must be either ''I'' or ''U''')
-end
-fprintf(' error over the validation set\n');
+fprintf('# optimizing gamma in order to approximate constant 1-funciton on validation point set\n');
 fprintf('#\n# search parameters:\n');
 fprintf('# gamma_min ................................ %8.5f\n', gamma_min );
 fprintf('# gamma_min ................................ %8.5f\n', gamma_max );
-fprintf('# n_gamma .................................. %8i\n', ngamma );
+fprintf('# n_gamma (bisection steps) ................ %8i\n', ngamma );
 fprintf('###################################################################\n');
 fprintf('#  gamma        RMSE\n');
 POU_L2error_best = -1;
@@ -199,12 +184,8 @@ gamma_with_warning = [];
 lastwarn('');            % empty lastwarn s.t. new warnings can be detected
 gammaspace = linspace( gamma_min, gamma_max, ngamma )';
 for gamma = gammaspace'
-% compute RMSE. case consistency of partition_case has been checked above
-    if strcmp(partition_case,'U')
-        POU_L2error = POU(xi_input, xi_input_vali, gamma);
-    else
-        POU_L2error = POI(xi_input, xi_input_vali, gamma, X, V);
-    end
+% compute RMSE
+    POU_L2error = POU(xi_input, xi_input_vali, gamma);
     if ~strcmp(lastwarn,'')
         gamma_with_warning(end+1) = gamma;  % track gammas which issued warnings
         lastwarn('');
@@ -222,7 +203,7 @@ end
 %% outputs
 fprintf('best fit: %10.6f, err: %10.5e\n', gamma_best, POU_L2error_best );
 % figure;
-% title('rel. LSQ POU/POI error\n');
+% title('rel. LSQ POU error\n');
 
 if exist('do_plot','var') && do_plot==true
     semilogy( linspace(gamma_min,gamma_max,ngamma), POU_L2error_all, 'linewidth', 3 )

@@ -127,7 +127,6 @@ handles.parameters.n_it_gradient = [];
 handles.parameters.Xstart = [];            % matrix containing the initial point coordinates as columns
 handles.parameters.Xstart_origin = [];
 handles.parameters.Xstart_name = [];
-handles.parameters.n_fixpoints = [];
 handles.parameters.creation_date = [];
 % ... results
 handles.results = struct;
@@ -138,8 +137,6 @@ handles.results.meshratio = [];            % the mesh ratio of X, = mesh norm * 
 handles.results.largestgap = [];           % the coordinate of the largest gap
 handles.results.gamma_POU_value = [];      % value of gamma, optimized to fit constant one function ('partition of unity')
 handles.results.gamma_POU_RMSE = [];       % rooted mean square error of SBF interpolation to fit constant one function
-handles.results.gamma_POI_value = [];      % value of gamma, optimized to act as identity on points ('partition of identity')
-handles.results.gamma_POI_RMSE = [];       % rooted mean square error of SBF interpolation to act as identity on points
 
 % Disable buttons that should not be pushed at first ...
 set(handles.pushbutton_plotEDF,'enable','off');
@@ -148,7 +145,6 @@ set(handles.pushbutton_export_path,'enable','off');
 set(handles.pushbutton_export_files,'enable','off');
 set(handles.pushbutton_plotpoints3d,'enable','off');
 set(handles.pushbutton_gamma_POU,'enable','off');
-set(handles.pushbutton_gamma_POI,'enable','off');
 % ... and also edit fields
 set(handles.edit_export,'enable','off');
 set(handles.edit_gamma_min,'enable','off');
@@ -237,7 +233,6 @@ function pushbutton_generate_points_Callback(hObject, eventdata, handles)
         % handles.parameters.Xstart_name was set by corresponding pushbutton_export_workspace callback
     end
     Xstart = handles.parameters.Xstart;
-    handles.parameters.n_fixpoints = CheckInteger(str2double(get(handles.edit_fixpoints,'string')),0);
     handles.parameters.creation_date = datestr(now);
     
     % TODO introduce fixpoint functionality
@@ -381,27 +376,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit_fixpoints_Callback(hObject, eventdata, handles)
-% hObject    handle to edit_fixpoints (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-% Hints: get(hObject,'String') returns contents of edit_fixpoints as text
-%        str2double(get(hObject,'String')) returns contents of edit_fixpoints as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function edit_fixpoints_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit_fixpoints (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
 
 
 % --- Executes on button press in radiobutton_init_equalarea.
@@ -613,7 +587,7 @@ function pushbutton_gamma_POU_Callback(hObject, eventdata, handles)
         % Begin the optimization
         disp('Begin kernel parameter optimization to fit constant function...')
         tic
-        [ gamma_best, gamma_RMSE ] = SearchGamma( handles.results.X, gamma_Nvali, gamma_min, gamma_max, gamma_steps, 'U' );
+        [ gamma_best, gamma_RMSE ] = SearchGamma( handles.results.X, gamma_Nvali, gamma_min, gamma_max, gamma_steps );
         toc
         
         % Display results
@@ -629,40 +603,6 @@ function pushbutton_gamma_POU_Callback(hObject, eventdata, handles)
     end
 
 
-% --- Executes on button press in pushbutton_gamma_POI.
-function pushbutton_gamma_POI_Callback(hObject, eventdata, handles)
-    % Get contents of edit text fields
-    gamma_min = str2double(get(handles.edit_gamma_min,'string'));
-    gamma_max = str2double(get(handles.edit_gamma_max,'string'));
-    gamma_steps = CheckInteger(str2double(get(handles.edit_gamma_steps,'string')),2);
-    gamma_Nvali = CheckInteger(str2double(get(handles.edit_gamma_Nvali,'string')),1);
-    % Basic consistency checks
-    if gamma_min < 0.1
-        msgbox('gamma_min must be at least 0.1')
-    elseif isinf(gamma_min)
-        msgbox('gamma_min must be < infinity')
-    elseif gamma_max < 0.1
-        msgbox('gamma_max must be at least 0.1')
-    elseif isinf(gamma_max)
-        msgbox('gamma_max must be < infinity')
-    else
-        % Begin the optimization
-        disp('Begin kernel parameter optimization to fit constant function...')
-        tic
-        [ gamma_best, gamma_RMSE ] = SearchGamma( handles.results.X, gamma_Nvali, gamma_min, gamma_max, gamma_steps, 'I' );
-        toc
-        
-        % Display results
-        set(handles.text_gamma_POI,'string',['result: gamma =  ', num2str(gamma_best)]);
-        set(handles.text_gamma_POI_RMSE,'string',['RMSE = ', num2str(gamma_RMSE)]);
-        
-        % Store results
-        handles.results.gamma_POI_value = gamma_best;
-        handles.results.gamma_POI_RMSE = gamma_RMSE;
-        
-        % Update handles structure
-        guidata(gcbf, handles);
-    end
 
 
 function edit_gamma_min_Callback(hObject, eventdata, handles)
@@ -972,7 +912,6 @@ if strcmp(state,'off')
     set(handles.pushbutton_export_files,'enable','off');
     set(handles.pushbutton_plotpoints3d,'enable','off');
     set(handles.pushbutton_gamma_POU,'enable','off');
-    set(handles.pushbutton_gamma_POI,'enable','off');
     guidata(current_fig, handles);
 elseif strcmp(state,'on')
     set(handles.pushbutton_generate_points,'enable','on');
@@ -985,7 +924,6 @@ elseif strcmp(state,'on')
     set(handles.pushbutton_export_files,'enable','on');
     set(handles.pushbutton_plotpoints3d,'enable','on');
     set(handles.pushbutton_gamma_POU,'enable','on');
-    set(handles.pushbutton_gamma_POI,'enable','on');
     guidata(current_fig, handles);
 else
     error('SetEnableAllPushbuttons needs state argument either ''on'' or ''off''');
