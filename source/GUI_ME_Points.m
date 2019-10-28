@@ -25,23 +25,11 @@ function varargout = GUI_ME_Points(varargin)
 % COPYRIGHT NOTES
 %
 % GUI_ME_Points.m
-% Copyright (C) 2019 by Felix Fritzen and Oliver Kunc
+% Copyright (C) 2018, Felix Fritzen and Oliver Kunc
+% All rights reserved.
 %
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-% 
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-%
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <http://www.gnu.org/licenses/>.
-% (the full license is distributed together with the software
-% in a file name LICENSE)
-%
+% This source code is licensed under the BSD 3-Clause License found in the
+% LICENSE file in the root directory of this source tree.
 %
 % This program employs a modified version of the softwares
 %
@@ -49,10 +37,10 @@ function varargout = GUI_ME_Points(varargin)
 %    Release 1.10 2005-06-26
 %
 %    written by Paul Leopardi for the University of New South Wales.
-% 
+%
 %    See COPYING in the subfolder eq_sphere_partitions for
 %    licensing information regarding this software.
-% 
+%
 %    See CHANGELOG in the subfolder eq_sphere_partitions for
 %    a concise list of changes that were made to the original code.
 %
@@ -67,7 +55,7 @@ function varargout = GUI_ME_Points(varargin)
 %    information regarding this software.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 
+%
 % This software package is related to the research article
 %
 % Oliver Kunc and Felix Fritzen: ''
@@ -177,7 +165,7 @@ function pushbutton_generate_points_Callback(hObject, eventdata, handles)
     % directory.
     current_directory = pwd;
     cd(handles.execution_directory);
-    
+
     % Copy user parameters to parameters struct: part I
     handles.parameters.D = CheckInteger(str2double(get(handles.edit_D,'string')),2);
     handles.parameters.N = CheckInteger(str2double(get(handles.edit_N,'string')),2);
@@ -193,7 +181,7 @@ function pushbutton_generate_points_Callback(hObject, eventdata, handles)
     handles.parameters.n_it_energy = CheckInteger(str2double(get(handles.edit_energy_iterations,'string')),0);
     handles.parameters.n_cycle_gradient = CheckInteger(str2double(get(handles.edit_gradient_cycles,'string')),0);
     handles.parameters.n_it_gradient = CheckInteger(str2double(get(handles.edit_gradient_iterations,'string')),0);
-    
+
     % Copy user parameters to easy-to-read local variables
     D = handles.parameters.D;
     N = handles.parameters.N;
@@ -203,7 +191,7 @@ function pushbutton_generate_points_Callback(hObject, eventdata, handles)
     n_it_energy      = handles.parameters.n_it_energy;
     n_cycle_gradient = handles.parameters.n_cycle_gradient;
     n_it_gradient    = handles.parameters.n_it_gradient;
-    
+
     % Copy user parameters to parameter struct: part II
     % handles.parameters.Xstart = [];               % matrix containing the initial point coordinates as columns
     if get(handles.radiobutton_init_equalarea,'value') == 1
@@ -234,7 +222,7 @@ function pushbutton_generate_points_Callback(hObject, eventdata, handles)
     end
     Xstart = handles.parameters.Xstart;
     handles.parameters.creation_date = datestr(now);
-    
+
     % TODO introduce fixpoint functionality
     disp('------------------------------------')
     disp('Use fminunc to minimize energy I ...')
@@ -247,17 +235,17 @@ function pushbutton_generate_points_Callback(hObject, eventdata, handles)
     tic
     X = MinimizeGradient( D, N, n_it_gradient, n_cycle_gradient, X, energy_index, sym_flag );
     toc
-    
+
 %     % Plot empirical distribution functions
 %     disp('Plotting empirical distribution functions')
 %     tic
 %     cla(handles.axes1)
 %     PlotEDF(X, sym_flag, handles.axes1);
 %     toc
-    
+
     % Nearest neighbor (NN) and mesh statistics
     [NN_xi_MinMeanMax, meshnorm, meshratio, largestgap] = NN_and_mesh_statistics(X,sym_flag);
-    
+
     % Display mesh and NN statistics
     set(handles.text_meshstat_norm,'string',        sprintf('%7.5f',meshnorm));
     set(handles.text_meshstat_separation,'string',  sprintf('%7.5f',0.5*NN_xi_MinMeanMax(1)));
@@ -272,23 +260,23 @@ function pushbutton_generate_points_Callback(hObject, eventdata, handles)
     handles.results.meshnorm = meshnorm;
     handles.results.meshratio = meshratio;
     handles.results.largestgap = largestgap;
-    
+
     % Enable all edit fields
     set(handles.edit_export,'enable','on');
     set(handles.edit_gamma_min,'enable','on');
     set(handles.edit_gamma_max,'enable','on');
     set(handles.edit_gamma_steps,'enable','on');
     set(handles.edit_gamma_Nvali,'enable','on');
-    
+
     % Update handles structure with data
     guidata(gcbf, handles);
-    
+
     % Enable all pushbuttons
     SetEnableAllPushbuttons('on', handles, gcbf);
-    
+
     disp(['Finished gegnerating ', num2str(N), ' points in ', ...
         num2str(D), ' dimensions.']);
-    
+
     % Change back to directory that was active on click time
     cd(current_directory);
 
@@ -413,7 +401,7 @@ success_flag = pushbutton_load_workspace_Callback(handles.pushbutton_load_worksp
 if success_flag==0
     msgbox('WARNING: undefined behavior because loading process has been canceled! Make sure initial points are loaded properly.')
 end
-    
+
 % Hint: get(hObject,'Value') returns toggle state of radiobutton_init_workspace
 
 
@@ -558,10 +546,10 @@ else
     handles.uibuttongroup_initialpoints.SelectedObject = handles.radiobutton_init_txtfile;
     set(handles.text_init_D,'string',['D = ', num2str(D)]);
     set(handles.text_init_N,'string',['N = ', num2str(N)]);
-    
+
     success_flag = 1;
     disp(['Loaded .txt file ', txtfile_totalname, ' containing X = Xstart.']);
-    
+
     % Update handles structure
     guidata(gcbf, handles);
 end
@@ -589,15 +577,15 @@ function pushbutton_gamma_POU_Callback(hObject, eventdata, handles)
         tic
         [ gamma_best, gamma_RMSE ] = SearchGamma( handles.results.X, gamma_Nvali, gamma_min, gamma_max, gamma_steps );
         toc
-        
+
         % Display results
         set(handles.text_gamma_POU,'string',['result: gamma =  ', num2str(gamma_best)]);
         set(handles.text_gamma_POU_RMSE,'string',['RMSE = ', num2str(gamma_RMSE)]);
-        
+
         % Store results
         handles.results.gamma_POU_value = gamma_best;
         handles.results.gamma_POU_RMSE = gamma_RMSE;
-        
+
         % Update handles structure
         guidata(gcbf, handles);
     end
@@ -816,7 +804,7 @@ else
             prefix_parameters, ' and ', prefix_results])
     end
 end
-    
+
 
 
 % --- Executes on button press in pushbutton_export_files.

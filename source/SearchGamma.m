@@ -1,9 +1,9 @@
 function [ gamma_best, POU_L2error_best, V, gammaspace, POU_L2error_all ]...
     = SearchGamma( X, vali, gamma_min, gamma_max, ngamma, ...
       xitrunc, do_plot )
-% SearchGamma  Find best gamma in a provided range w.r.t. to the rooted 
+% SearchGamma  Find best gamma in a provided range w.r.t. to the rooted
 % mean square error of the partition of unity (POU). Uses Gaussian kernel.
-% 
+%
 % Inputs
 % X           D x N matrix containing normalized columns; each column is
 %             one sampling/training point
@@ -30,23 +30,11 @@ function [ gamma_best, POU_L2error_best, V, gammaspace, POU_L2error_all ]...
 % COPYRIGHT NOTES
 %
 % SearchGamma.m
-% Copyright (C) 2019 by Felix Fritzen and Oliver Kunc
+% Copyright (C) 2018, Felix Fritzen and Oliver Kunc
+% All rights reserved.
 %
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-% 
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-%
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <http://www.gnu.org/licenses/>.
-% (the full license is distributed together with the software
-% in a file name LICENSE)
-%
+% This source code is licensed under the BSD 3-Clause License found in the
+% LICENSE file in the root directory of this source tree.
 %
 % This program employs a modified version of the softwares
 %
@@ -54,10 +42,10 @@ function [ gamma_best, POU_L2error_best, V, gammaspace, POU_L2error_all ]...
 %    Release 1.10 2005-06-26
 %
 %    written by Paul Leopardi for the University of New South Wales.
-% 
+%
 %    See COPYING in the subfolder eq_sphere_partitions for
 %    licensing information regarding this software.
-% 
+%
 %    See CHANGELOG in the subfolder eq_sphere_partitions for
 %    a concise list of changes that were made to the original code.
 %
@@ -72,7 +60,7 @@ function [ gamma_best, POU_L2error_best, V, gammaspace, POU_L2error_all ]...
 %    information regarding this software.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 
+%
 % This software package is related to the research article
 %
 % Oliver Kunc and Felix Fritzen: ''

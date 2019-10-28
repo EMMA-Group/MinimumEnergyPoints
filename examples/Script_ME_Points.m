@@ -15,25 +15,13 @@ c=clock;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % COPYRIGHT NOTES
-% 
+%
 % BatchGeneratePoints.m
-% Copyright (C) 2019 by Felix Fritzen and Oliver Kunc
+% Copyright (C) 2018, Felix Fritzen and Oliver Kunc
+% All rights reserved.
 %
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-% 
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-%
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <http://www.gnu.org/licenses/>.
-% (the full license is distributed together with the software
-% in a file name LICENSE)
-%
+% This source code is licensed under the BSD 3-Clause License found in the
+% LICENSE file in the root directory of this source tree.
 %
 % This program employs a modified version of the softwares
 %
@@ -41,10 +29,10 @@ c=clock;
 %    Release 1.10 2005-06-26
 %
 %    written by Paul Leopardi for the University of New South Wales.
-% 
+%
 %    See COPYING in the subfolder eq_sphere_partitions for
 %    licensing information regarding this software.
-% 
+%
 %    See CHANGELOG in the subfolder eq_sphere_partitions for
 %    a concise list of changes that were made to the original code.
 %
@@ -59,7 +47,7 @@ c=clock;
 %    information regarding this software.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 
+%
 % This software package is related to the research article
 %
 % Oliver Kunc and Felix Fritzen: ''
@@ -80,7 +68,7 @@ all_D = [4,5,6];
 % define number of points
 all_N = [32];%,41,64,83,128,193,256,383,512,1024,1319,1889,2048];
 % use symmetrized kernels?
-sym_flag = 0; 
+sym_flag = 0;
 % define cases of s to be considered: -2 = LOG, -1 = log, >0 = Riesz
 all_s = [-2,-1,0.5,1,2,3];
 
@@ -103,13 +91,13 @@ for D = all_D
         Xstart_name = 'Equal Area';
         Xstart = RenormalizeColumns( 0.01*RandomDirections(D,N) + eq_point_set(D-1,N) );
         for s = all_s
-            
+
             % something for the diary
             D
             N
             sym_flag
             s
-            
+
             % store parameters in structure
             parameters = struct;
             parameters.D = D;
@@ -125,7 +113,7 @@ for D = all_D
             parameters.Xstart = Xstart;
             parameters.n_fixpoints = n_fixpoints;
             parameters.creation_date = creation_date;
-            
+
             %% start the energy minimization by fminunc
             disp('------------------------------------')
             disp('Use fminunc to minimize energy...')
@@ -143,11 +131,11 @@ for D = all_D
             full_filename = ['exports/', filename_prefix, '_D', num2str(D), '_N', num2str(N), '_sym', num2str(sym_flag), '_s', num2str(s)];
             save([full_filename,'.mat'], 'parameters', 'X');
             dlmwrite([full_filename,'.txt'], X','delimiter','\t','precision','%30.23e'); % remember: X is transposed here!
-    
+
             disp(['Finished gegnerating and exporting', num2str(N), ' directions in ', ...
                 num2str(D), ' dimensions. filename:']);
             disp(full_filename);
-            
+
         end % s
     end % N
 end % D

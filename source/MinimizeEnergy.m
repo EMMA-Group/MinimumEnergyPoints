@@ -48,23 +48,11 @@ function [ X, d_nn, X0, d_nn0, bestcycle ] = MinimizeEnergy( D, N, nit, ncycle, 
 % COPYRIGHT NOTES
 %
 % MinimizeEnergy.m
-% Copyright (C) 2019 by Felix Fritzen and Oliver Kunc
+% Copyright (C) 2018, Felix Fritzen and Oliver Kunc
+% All rights reserved.
 %
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-% 
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-%
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <http://www.gnu.org/licenses/>.
-% (the full license is distributed together with the software
-% in a file name LICENSE)
-%
+% This source code is licensed under the BSD 3-Clause License found in the
+% LICENSE file in the root directory of this source tree.
 %
 % This program employs a modified version of the softwares
 %
@@ -72,10 +60,10 @@ function [ X, d_nn, X0, d_nn0, bestcycle ] = MinimizeEnergy( D, N, nit, ncycle, 
 %    Release 1.10 2005-06-26
 %
 %    written by Paul Leopardi for the University of New South Wales.
-% 
+%
 %    See COPYING in the subfolder eq_sphere_partitions for
 %    licensing information regarding this software.
-% 
+%
 %    See CHANGELOG in the subfolder eq_sphere_partitions for
 %    a concise list of changes that were made to the original code.
 %
@@ -90,7 +78,7 @@ function [ X, d_nn, X0, d_nn0, bestcycle ] = MinimizeEnergy( D, N, nit, ncycle, 
 %    information regarding this software.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 
+%
 % This software package is related to the research article
 %
 % Oliver Kunc and Felix Fritzen: ''
@@ -200,12 +188,12 @@ while( jcycle<ncycle && sc==0 )
     'MaxIterations',            nit, ...
     'display',                  'none');
     end
-    
+
     %%%% ACTUAL WORK OF THE CURRENT CYCLE IS HERE ...
     X   = reshape( fminunc( @(x)EnergyAndGradient(x, D, energy_index, sym_flag), reshape( X, [], 1 ), options ), D, N );
     X   = RenormalizeColumns(X);
     %%%%
-    
+
     dX  = X - dX;
 	if( norm(dX, 'fro')  < sqrt( D*N * 1e-12 ) )
         if( nretry < 1 ) % was 3 before but with next to little gain
@@ -221,7 +209,7 @@ while( jcycle<ncycle && sc==0 )
         end
 	else
 		dX  = X; % backup current point
-	end	
+	end
 
     % additional function calls for evaluation of the point set after
     % the jcycle-th cycle. There is room for optimization here, as this
@@ -232,7 +220,7 @@ while( jcycle<ncycle && sc==0 )
         bestcycle   = jcycle;
         Xbest       = X;
     end
-    
+
     % this is just for outputting the evolution of the nearest neighbor
     % (NN) statistics. comment this for high-performance calls.
     [ ~, d ] = Distance( X, sym_flag );
