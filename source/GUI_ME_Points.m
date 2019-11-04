@@ -489,16 +489,16 @@ else
     matfile_totalname = [matfile_path, matfile_name];
     load(matfile_totalname);
 end
-if ~exist('X','var')
-    msgbox(['WARNING: no variable X contained in file ', matfile_totalname, ...
+if ~exist('results','var') || ~isfield(results,'X')
+    msgbox(['WARNING: no variable results.X contained in file ', matfile_totalname, ...
         '. Undefined behavior! Make sure initial points are loaded properly.']);
     success_flag = 0;
 else
     % Set compatible parameters
-    handles.parameters.Xstart = X;
+    handles.parameters.Xstart = results.X;
     handles.parameters.Xstart_name = matfile_totalname;
-    D = size(X,1);
-    N = size(X,2);
+    D = size(results.X,1);
+    N = size(results.X,2);
     handles.parameters.D = D;
     handles.parameters.N = N;
     % Set compatible GUI object properties
@@ -509,7 +509,8 @@ else
     set(handles.text_init_N,'string',['N = ', num2str(N)]);
 
     success_flag = 1;
-    disp(['Loaded .mat file ', matfile_totalname, ' containing X = Xstart.']);
+    disp(['Loaded .mat file ', matfile_totalname, ' containing results.X = Xstart.']);
+    disp(['D = ',num2str(D),' and N = ',num2str(N),' have been set accordingly.']);
 
     % Update handles structure
     guidata(gcbf, handles);
@@ -549,6 +550,7 @@ else
 
     success_flag = 1;
     disp(['Loaded .txt file ', txtfile_totalname, ' containing X = Xstart.']);
+    disp(['D = ',num2str(D),' and N = ',num2str(N),' have been set accordingly.']);
 
     % Update handles structure
     guidata(gcbf, handles);

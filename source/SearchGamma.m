@@ -136,7 +136,10 @@ gamma_best = gamma_max;
 %% truncation
 if exist('xitrunc','var') && ~isempty(xitrunc)
     if ~isnumeric(xitrunc)
-        error('if xitrunc is provided, it mus be numeric')
+        error('if xitrunc is provided, it must be numeric')
+    end
+    if xitrunc <= 0
+        error('xitrunc must be greater than zero')
     end
     ximax = xitrunc;
     ndel = 0;
@@ -194,6 +197,7 @@ fprintf('best fit: %10.6f, err: %10.5e\n', gamma_best, POU_L2error_best );
 % title('rel. LSQ POU error\n');
 
 if exist('do_plot','var') && do_plot==true
+    figure('NumberTitle','off','Name',['D = ',num2str(D),', N = ',num2str(N)]);
     semilogy( linspace(gamma_min,gamma_max,ngamma), POU_L2error_all, 'linewidth', 3 )
     hold on
     % plot gammas with warnings
