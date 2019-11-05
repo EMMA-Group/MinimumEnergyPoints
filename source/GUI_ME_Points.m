@@ -466,6 +466,8 @@ if ~isempty(Xstart) && ~isempty(Xstart_name)
 
     % Output and return value
     disp(['Loaded workspace variable ', Xstart_name, ' as Xstart.']);
+    disp(['D = ',num2str(D),' and N = ',num2str(N),' have been set accordingly.']);
+
     success_flag = 1;
 
     % Update handles structure
