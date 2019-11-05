@@ -158,9 +158,9 @@ fprintf('initial:    I= %16.8e, |g| = %16.8e .. NN %6.4f / %6.4f / %6.4f ... NN 
 nretry      = 0;    % counts number of retries
 dX          = X;    % difference of point coordinates between cycles
 jcycle      = 0;    % cycle counter
-bestcycle   = 0;    % remembers which cycle had the best result
+bestcycle   = 0;    % remembers which cycle had the best result (i.e. lowest energy)
 Xbest       = X;    % store best point set here (energy may increase later)
-gbest       = -1;   % store best gradient here (gradient norm may increase later)
+Ibest       = -1;   % store best energy here (in case it doesn't evolve monotonically, e.g. local minimums)
 sc          = 0;    % success indicator
 while( jcycle<ncycle && sc==0 )
     jcycle=jcycle+1;
@@ -215,8 +215,8 @@ while( jcycle<ncycle && sc==0 )
     % the jcycle-th cycle. There is room for optimization here, as this
     % information might be obtained during the cycle itself <- TODO
     [ I, g  ] = EnergyAndGradient( reshape(X, [], 1), D, energy_index, sym_flag );
-    if( gbest<0 || norm(g)<gbest )
-        gbest       = norm(g);
+    if( Ibest<0 || I<Ibest )
+        Ibest       = I;
         bestcycle   = jcycle;
         Xbest       = X;
     end
