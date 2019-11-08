@@ -802,10 +802,14 @@ else
         abort_flag = 1;
     end
     if abort_flag == 0
-        assignin('base', prefix_parameters, handles.parameters);
-        assignin('base', prefix_results, handles.results);
-        disp(['Exported results to base workspace structures ', ...
-            prefix_parameters, ' and ', prefix_results])
+        try
+            assignin('base', prefix_parameters, handles.parameters);
+            assignin('base', prefix_results, handles.results);
+            disp(['Exported results to base workspace structures ', ...
+                prefix_parameters, ' and ', prefix_results])
+        catch
+            msgbox('ERROR: could not export to workspace. Perhaps name (prefix) is invalid variable name?')
+        end
     end
 end
 
