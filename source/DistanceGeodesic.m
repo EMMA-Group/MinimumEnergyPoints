@@ -58,10 +58,11 @@ function [ xi, xi_nn, Y, l ] = DistanceGeodesic( X, sym_flag )
 %
 % This software package is related to the research article
 %
-% Oliver Kunc and Felix Fritzen: ''
-% JOURNAL NAME, Number/Volume, p. XX-YY, 2019
-% DOI   ...
-% URL   dx.doi.org/...
+% Oliver Kunc and Felix Fritzen: 'Generation of energy-minimizing point sets on
+% spheres and their application in mesh-free interpolation and differentiation',
+% Advances in Computational Mathematics, Number/Volume, p. XX-YY, 2019
+% DOI   10.1007/s10444-019-09726-5
+% URL   doi.org/10.1007/s10444-019-09726-5
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

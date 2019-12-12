@@ -58,10 +58,11 @@ function varargout = GUI_ME_Points(varargin)
 %
 % This software package is related to the research article
 %
-% Oliver Kunc and Felix Fritzen: ''
-% JOURNAL NAME, Number/Volume, p. XX-YY, 2019
-% DOI   ...
-% URL   dx.doi.org/...
+% Oliver Kunc and Felix Fritzen: 'Generation of energy-minimizing point sets on
+% spheres and their application in mesh-free interpolation and differentiation',
+% Advances in Computational Mathematics, Number/Volume, p. XX-YY, 2019
+% DOI   10.1007/s10444-019-09726-5
+% URL   doi.org/10.1007/s10444-019-09726-5
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -583,7 +584,7 @@ function pushbutton_gamma_POU_Callback(hObject, eventdata, handles)
         toc
 
         % Display results
-        set(handles.text_gamma_POU,'string',['result: gamma =  ', num2str(gamma_best)]);
+        set(handles.text_gamma_POU,'string',['parameter =  ', num2str(gamma_best)]);
         set(handles.text_gamma_POU_RMSE,'string',['RMSE = ', num2str(gamma_RMSE)]);
 
         % Store results
