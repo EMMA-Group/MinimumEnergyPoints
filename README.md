@@ -11,10 +11,10 @@ See the paper for more information or contact the authors.
 
 This software package is related to the research article
 
-> Oliver Kunc and Felix Fritzen: 'Generation of energy-minimizing point sets on
-> spheres and their application in mesh-free interpolation and differentiation',
+> Oliver Kunc and Felix Fritzen: *Generation of energy-minimizing point sets on
+> spheres and their application in mesh-free interpolation and differentiation*,
 >
-> *Advances in Computational Mathematics*, Number/Volume, p. XX-YY, **2019**
+> Advances in Computational Mathematics **45**(5–6), 3021–3056, 2019
 >
 > DOI   [10.1007/s10444-019-09726-5](https://doi.org/10.1007/s10444-019-09726-5 "Paper in Advances in Computational Mathematics")
 

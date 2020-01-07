@@ -53,9 +53,8 @@ function [ x ] = CheckInteger( x, lower_bound )
 %
 % Oliver Kunc and Felix Fritzen: 'Generation of energy-minimizing point sets on
 % spheres and their application in mesh-free interpolation and differentiation',
-% Advances in Computational Mathematics, Number/Volume, p. XX-YY, 2019
-% DOI   10.1007/s10444-019-09726-5
-% URL   doi.org/10.1007/s10444-019-09726-5
+% Advances in Computational Mathematics 45(5-6), pp. 3021-3056, 2019
+% URL: doi.org/10.1007/s10444-019-09726-5
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
