@@ -89,5 +89,13 @@ NN_MinMeanMax    = [NN_min NN_mean NN_max];
 
 %% mesh ratio, norm, and largest gap position
 % mesh ratio = mesh norm / NN_min * 2
-[meshnorm, largestgap]   = MeshNorm(X,Y,sym_flag);
-meshratio                = 2.0 * meshnorm / NN_min;
+try
+    [meshnorm, largestgap]   = MeshNorm(X,Y,sym_flag);
+    meshratio                = 2.0 * meshnorm / NN_min;
+catch
+    fprintf(2, 'ERROR: probably too many points / too little memory?\n');
+    fprintf(2, '       setting meshnorm, largestgap and meshratio to NaN.\n');
+    meshnorm    = nan;
+    largestgap  = nan;
+    meshratio   = nan;
+end

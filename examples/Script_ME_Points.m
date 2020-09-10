@@ -50,10 +50,10 @@ c=clock;
 %
 % This software package is related to the research article
 %
-% Oliver Kunc and Felix Fritzen: ''
-% JOURNAL NAME, Number/Volume, p. XX-YY, 2019
-% DOI   ...
-% URL   dx.doi.org/...
+% Oliver Kunc and Felix Fritzen: 'Generation of energy-minimizing point sets on
+% spheres and their application in mesh-free interpolation and differentiation',
+% Advances in Computational Mathematics 45(5-6), pp. 3021-3056, 2019
+% URL: doi.org/10.1007/s10444-019-09726-5
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -89,7 +89,7 @@ for D = all_D
         % the same initial positions are used for all s
         Xstart_origin = 'Equal Area';
         Xstart_name = 'Equal Area';
-        Xstart = RenormalizeColumns( 0.01*RandomDirections(D,N) + eq_point_set(D-1,N) );
+        Xstart = RenormalizeColumns( 0.01*RandomPoints(D,N) + eq_point_set(D-1,N) );
         for s = all_s
 
             % something for the diary

@@ -225,16 +225,25 @@ function pushbutton_generate_points_Callback(hObject, eventdata, handles)
 
     % TODO introduce fixpoint functionality
     disp('------------------------------------')
-    disp('Use fminunc to minimize energy I ...')
-    tic
-    X = MinimizeEnergy( D, N, n_it_energy,  n_cycle_energy, Xstart, energy_index, sym_flag );
-    toc
-
+    if n_cycle_energy>0 && n_it_energy>0
+        disp('Use fminunc to minimize energy I ...')
+        tic
+        X = MinimizeEnergy( D, N, n_it_energy,  n_cycle_energy, Xstart, energy_index, sym_flag );
+        toc
+    else
+        disp(['Skipping fminunc for energy minimization because cycle number (',num2str(n_cycle_energy),') or iteration number (',num2str(n_it_energy),') is zero.'])
+        X=Xstart;
+    end
+    
     disp('------------------------------------')
-    disp('Use lsqnonlin to minimize gradient g ...')
-    tic
-    X = MinimizeGradient( D, N, n_it_gradient, n_cycle_gradient, X, energy_index, sym_flag );
-    toc
+    if n_cycle_gradient>0 && n_it_gradient>0
+        disp('Use lsqnonlin to minimize gradient g ...')
+        tic
+        X = MinimizeGradient( D, N, n_it_gradient, n_cycle_gradient, X, energy_index, sym_flag );
+        toc
+    else
+        disp(['Skipping lsqnonlin for gradient minimization because cycle number (',num2str(n_cycle_gradient),') or iteration number (',num2str(n_it_gradient),') is zero.'])
+    end
 
 %     % Plot empirical distribution functions
 %     disp('Plotting empirical distribution functions')
@@ -855,7 +864,11 @@ if handles.parameters.D ~= 3
     msgbox(['Plot only possible for D = 3, but currently D = ', ...
         num2str(handles.parameters.D), '.']);
 else
-    PlotPointsOnSphere(handles.results.X, handles.results.largestgap, handles.parameters.sym_flag);
+    if ~isnan(handles.results.largestgap)
+        PlotPointsOnSphere(handles.results.X, handles.results.largestgap, handles.parameters.sym_flag);
+    else
+        PlotPointsOnSphere(handles.results.X, [], handles.parameters.sym_flag);
+    end
 end
 
 
